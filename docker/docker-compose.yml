@@ -1,0 +1,60 @@
+services:
+  # ────────────────────────────────────────────────
+  # PostgreSQL 15 with PostGIS
+  # ────────────────────────────────────────────────
+  postgres:
+    image: postgis/postgis:15-3.4
+    container_name: route-mate-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: routemate
+      POSTGRES_PASSWORD: routemate_dev
+      POSTGRES_DB: routemate_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d
+    networks:
+      - route-mate-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U routemate -d routemate_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────────────────────────
+  # Redis 7
+  # ────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: route-mate-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - route-mate-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --appendonly yes
+
+# ────────────────────────────────────────────────
+# Volumes — persist data between container restarts
+# ────────────────────────────────────────────────
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ────────────────────────────────────────────────
+# Network — containers talk to each other by name
+# ────────────────────────────────────────────────
+networks:
+  route-mate-network:
+    driver: bridge
