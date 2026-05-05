@@ -1,0 +1,9 @@
+{
+  "development": {
+    "url": "${DATABASE_URL}",
+    "migrationsDirectory": "./src/infrastructure/db/migrations",
+    "direction": "up",
+    "count": 1000,
+    "verbose": true
+  }
+}
