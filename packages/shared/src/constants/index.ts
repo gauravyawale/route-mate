@@ -1,0 +1,10 @@
+export const AUTH = {
+  OTP_LENGTH: 6,
+  OTP_EXPIRY_SECONDS: 300, // 5 minutes
+  ACCESS_TOKEN_EXPIRY: "15m",
+  REFRESH_TOKEN_EXPIRY: "30d",
+  REFRESH_TOKEN_EXPIRY_SECONDS: 30 * 24 * 60 * 60, // 30 days in seconds
+  MAX_OTP_ATTEMPTS: 5,
+  MAX_OTP_REQUESTS: 3,
+  OTP_RATE_WINDOW_SECONDS: 600, // 10 minutes
+} as const;
