@@ -1,7 +1,8 @@
 import Fastify from "fastify";
 import { connectDB } from "./infrastructure/db/client.js";
 import { connectRedis } from "./infrastructure/redis/client.js";
-
+import { authRoutes } from "./modules/auth/auth.routes.js";
+import { registerErrorhandler } from "./middleware/error-handler.js";
 const app = Fastify({
   logger: {
     transport: {
@@ -13,6 +14,12 @@ const app = Fastify({
   },
 });
 
+// ─── Register Routes ───────────────────────────────────────
+app.register(authRoutes, { prefix: "/api/v1/auth" });
+
+// ─── Register Middleware ───────────────────────────────────
+// Error handler
+registerErrorhandler(app);
 // ─── Startup Hook ──────────────────────────────────────────
 // onReady fires after all plugins registered, before accepting requests
 app.addHook("onReady", async () => {
