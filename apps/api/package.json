@@ -11,9 +11,7 @@
     "migrate:down": "tsx --env-file=.env src/infrastructure/db/migrator.ts down"
   },
   "dependencies": {
-    "@fastify/cors": "^9.0.0",
     "@fastify/jwt": "^8.0.0",
-    "@fastify/rate-limit": "^9.0.0",
     "@route-mate/shared": "*",
     "@types/node-pg-migrate": "^2.3.1",
     "bullmq": "^5.0.0",

@@ -10,20 +10,7 @@ import {
   TooManyRequestsError,
   UnauthorizedError,
 } from "../../utils/errors.js";
-
-// --- Types --------------------------------
-interface User {
-  id: string;
-  phone: string;
-  full_name: string | null;
-  email: string | null;
-  avatar_url: string | null;
-  is_verified: boolean;
-  is_driver_approved: boolean;
-  active_mode: "rider" | "driver";
-  created_at: Date;
-  updated_at: Date;
-}
+import { User } from "@route-mate/shared/types";
 
 interface TokenPair {
   accessToken: string;
