@@ -1,0 +1,80 @@
+Route Mate — Project Summary
+
+What It Is
+A carpooling app (Hopr clone) where users can act as both hosts (drivers) and riders on a single account, toggling between modes in-app.
+
+Core Domain Decisions
+One account, two modes     → rider ↔ driver toggle
+Fixed origin → destination → no waypoints for v1
+Host approves bookings     → manual confirmation, not instant
+Payment after confirmation → host confirms → rider pays → 15min window
+No-show policy             → no penalty, seat released
+Host cancels after payment → full automatic refund
+In-app masked calls        → Exotel/Twilio proxy, numbers hidden
+Multi-vehicle per driver   → cars and bikes, bike = 1 seat max
+
+Stack
+Monorepo        Yarn workspaces + Turborepo
+Backend         Fastify + TypeScript
+Database        PostgreSQL 15 + PostGIS
+Cache/Queue     Redis + BullMQ
+Real-time       Socket.io
+Web             Next.js
+Mobile          React Native + Expo
+Shared          @route-mate/shared (Zod schemas, types, constants)
+Infrastructure  Docker Compose
+
+Database — 9 Tables
+users                    → single identity, mode toggle
+driver_profiles          → license, rating, cancellation tracking
+vehicles                 → multi-vehicle, car/bike constraint
+rides                    → PostGIS geo, state machine
+bookings                 → state machine, expiry, payment tracking
+payments                 → immutable audit trail, retry logic
+reviews                  → post-trip, self-review prevented
+identity_verifications   → Aadhaar/PAN/license verification
++ indexes migration      → partial indexes on hot query paths
+
+API — Built So Far
+POST /api/v1/auth/send-otp       → generate OTP, store hashed in Redis
+POST /api/v1/auth/verify-otp     → verify, upsert user, issue tokens
+POST /api/v1/auth/refresh        → rotate refresh token
+POST /api/v1/auth/logout         → blacklist token in Redis
+
+GET  /api/v1/users/me            → get profile (DTO, not raw DB row)
+PATCH /api/v1/users/me           → update profile (dynamic SQL)
+PATCH /api/v1/users/me/mode      → switch driver ↔ rider
+
+Security Built
+OTP             SHA-256 hashed in Redis, 5min TTL
+Rate limiting   3 OTP requests / 10min per phone
+Attempt limit   5 wrong attempts → OTP invalidated
+JWT             Access 15min + Refresh 30days with JTI
+Token rotation  Refresh rotates on every use
+Blacklisting    Logout kills token in Redis instantly
+Replay attack   Prevented via JTI + Redis check
+Middleware      authenticate, requireMode, requireDriverApproved
+Response DTOs   Never expose raw DB rows to clients
+
+Architecture Pattern
+routes.ts       → declare endpoints, attach middleware
+controller.ts   → parse request, call service, return response
+service.ts      → all business logic, DB queries, Redis ops
+formatters.ts   → shape DB rows into response DTOs
+errors.ts       → typed errors with correct HTTP status codes
+@route-mate/shared → types, schemas, constants shared across all apps
+
+In Progress
+⬜ Vehicles module
+⬜ Rides module (PostGIS geo search)
+⬜ Bookings module (state machine + BullMQ expiry)
+⬜ Payments module (Razorpay integration)
+⬜ Reviews module
+⬜ Socket.io real-time layer
+⬜ Driver onboarding flow
+⬜ Security hardening (CORS, helmet, rate limiting)
+⬜ Sessions + device binding
+
+Branching
+main              ← stable, merged PRs
+feature/auth      ← current branch

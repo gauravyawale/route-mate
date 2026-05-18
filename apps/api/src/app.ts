@@ -3,8 +3,12 @@ import { connectDB } from "./infrastructure/db/client.js";
 import { connectRedis } from "./infrastructure/redis/client.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { registerErrorhandler } from "./middleware/error-handler.js";
-import { authenticate } from "./middleware/authenticate.js";
-import { requireMode } from "./middleware/authorize.js";
+import { userRoutes } from "./modules/users/users.routes.js";
+import helmet from "@fastify/helmet";
+import cors from "@fastify/cors";
+import rateLimit from "@fastify/rate-limit";
+import { config } from "./config/index.js";
+import { vehicleRoutes } from "./modules/vehicles/vehicles.routes.js";
 
 const app = Fastify({
   logger: {
@@ -17,9 +21,14 @@ const app = Fastify({
   },
 });
 
+// TODO: Add more security headers and configure CORS properly in production
+
 // ─── Register Routes ───────────────────────────────────────
 app.register(authRoutes, { prefix: "/api/v1/auth" });
 
+app.register(userRoutes, { prefix: "/api/v1/users" });
+
+app.register(vehicleRoutes, { prefix: "/api/v1/users" });
 // ─── Register Middleware ───────────────────────────────────
 // Error handler
 registerErrorhandler(app);

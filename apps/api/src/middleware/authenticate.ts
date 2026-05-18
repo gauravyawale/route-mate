@@ -3,20 +3,14 @@ import jwt from "jsonwebtoken";
 import { config } from "../config";
 import { queryOne } from "../infrastructure/db/client";
 import { UnauthorizedError } from "../utils/errors";
-import { verify } from "crypto";
+import type { User } from "@route-mate/shared";
 
 // ─── Extend Fastify Request to incluse user ───────────────────────────────────
 
 // tell TypeScript that our FastifyRequest has a `user` property
 declare module "fastify" {
   interface FastifyRequest {
-    user: {
-      id: string;
-      phone: string;
-      active_mode: "rider" | "driver";
-      is_verified: boolean;
-      is_driver_approved: boolean;
-    };
+    user: User;
   }
 }
 
