@@ -145,6 +145,16 @@ export interface SwitchModeInput {
   mode: "rider" | "driver";
 }
 
+export interface AddVehicleInput {
+  make: string;
+  model: string;
+  year: number;
+  color: string;
+  plate_number: string;
+  total_seats: number;
+  vehicle_type: "car" | "bike";
+}
+
 // ─── Response DTOs ─────────────────────────────────────────
 // Subset of internal types — only what clients need
 
