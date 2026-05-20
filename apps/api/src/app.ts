@@ -9,6 +9,7 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { config } from "./config/index.js";
 import { vehicleRoutes } from "./modules/vehicles/vehicles.routes.js";
+import { rideRoutes } from "./modules/rides/rides.routes.js";
 
 const app = Fastify({
   logger: {
@@ -29,6 +30,8 @@ app.register(authRoutes, { prefix: "/api/v1/auth" });
 app.register(userRoutes, { prefix: "/api/v1/users" });
 
 app.register(vehicleRoutes, { prefix: "/api/v1/users" });
+
+app.register(rideRoutes, { prefix: "/api/v1/rides" });
 // ─── Register Middleware ───────────────────────────────────
 // Error handler
 registerErrorhandler(app);
