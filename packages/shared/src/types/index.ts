@@ -155,6 +155,37 @@ export interface AddVehicleInput {
   vehicle_type: "car" | "bike";
 }
 
+export interface CreateRideInput {
+  vehicle_id: string;
+  origin_address: string;
+  origin_lat: number;
+  origin_lng: number;
+  destination_address: string;
+  destination_lat: number;
+  destination_lng: number;
+  scheduled_at: string; // ISO datetime string
+  seats_total: number;
+  price_per_seat: number;
+}
+
+export interface SearchRidesInput {
+  // Rider's origin
+  origin_lat: number;
+  origin_lng: number;
+  // Rider's destination
+  destination_lat: number;
+  destination_lng: number;
+  // Search corridor radius (default 5km)
+  radius_m?: number;
+  // Optional date filter
+  scheduled_date?: string;
+}
+
+export interface UpdateRideStatusInput {
+  status: "in_progress" | "completed" | "cancelled";
+  cancelled_reason?: string;
+}
+
 // ─── Response DTOs ─────────────────────────────────────────
 // Subset of internal types — only what clients need
 
@@ -201,4 +232,33 @@ export interface BookingResponse {
   expires_at: Date | null;
   confirmed_at: Date | null;
   paid_at: Date | null;
+}
+
+export interface RideDetailResponse {
+  id: string;
+  origin_address: string;
+  destination_address: string;
+  scheduled_at: Date;
+  seats_total: number;
+  seats_available: number;
+  price_per_seat: number;
+  status: string;
+  created_at: Date;
+  driver: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+    rating: number;
+    total_rides: number;
+  };
+  vehicle: {
+    id: string;
+    make: string;
+    model: string;
+    year: number;
+    color: string;
+    plate_number: string;
+    vehicle_type: string;
+    total_seats: number;
+  };
 }
