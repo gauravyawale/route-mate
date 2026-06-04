@@ -4,12 +4,13 @@ import { connectRedis } from "./infrastructure/redis/client.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { registerErrorhandler } from "./middleware/error-handler.js";
 import { userRoutes } from "./modules/users/users.routes.js";
-import helmet from "@fastify/helmet";
-import cors from "@fastify/cors";
-import rateLimit from "@fastify/rate-limit";
+// import helmet from "@fastify/helmet";
+// import cors from "@fastify/cors";
+// import rateLimit from "@fastify/rate-limit";
 import { config } from "./config/index.js";
 import { vehicleRoutes } from "./modules/vehicles/vehicles.routes.js";
 import { rideRoutes } from "./modules/rides/rides.routes.js";
+import { bookingRoutes } from "./modules/bookings/bookings.routes";
 
 const app = Fastify({
   logger: {
@@ -32,6 +33,8 @@ app.register(userRoutes, { prefix: "/api/v1/users" });
 app.register(vehicleRoutes, { prefix: "/api/v1/users" });
 
 app.register(rideRoutes, { prefix: "/api/v1/rides" });
+
+app.register(bookingRoutes, { prefix: "/api/v1/bookings" });
 // ─── Register Middleware ───────────────────────────────────
 // Error handler
 registerErrorhandler(app);

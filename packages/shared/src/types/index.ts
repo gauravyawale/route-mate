@@ -116,10 +116,9 @@ export type RideStatus =
 export type BookingStatus =
   | "pending"
   | "confirmed"
-  | "payment_pending"
   | "paid"
   | "cancelled"
-  | "expired"
+  | "no_seat"
   | "no_show";
 
 export type PaymentStatus = "pending" | "success" | "failed" | "refunded";
@@ -186,6 +185,22 @@ export interface UpdateRideStatusInput {
   cancelled_reason?: string;
 }
 
+export interface RequestBookingInput {
+  ride_id: string;
+  seats_booked: number;
+  // rider's specific pickup and dropoff within the ride's corridor
+  hop_in_address: string;
+  hop_in_lat: number;
+  hop_in_lng: number;
+  hop_off_address: string;
+  hop_off_lat: number;
+  hop_off_lng: number;
+}
+
+export interface CancelBookingInput {
+  reason?: string;
+}
+
 // ─── Response DTOs ─────────────────────────────────────────
 // Subset of internal types — only what clients need
 
@@ -225,13 +240,28 @@ export interface RideResponse {
 
 export interface BookingResponse {
   id: string;
-  ride_id: string;
+  status: BookingStatus;
   seats_booked: number;
   total_amount: number;
-  status: BookingStatus;
-  expires_at: Date | null;
   confirmed_at: Date | null;
   paid_at: Date | null;
+  created_at: Date;
+  ride: {
+    id: string;
+    origin_address: string;
+    destination_address: string;
+    scheduled_at: Date;
+    price_per_seat: number;
+    status: RideStatus;
+  };
+  hop_in_address: string | null;
+  hop_off_address: string | null;
+  rider: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+    phone: string;
+  };
 }
 
 export interface RideDetailResponse {

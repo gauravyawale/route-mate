@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { ridesController } from "./rides.controller";
 import { authenticate } from "../../middleware/authenticate";
 import { requireMode } from "../../middleware/authorize";
+import { bookingsController } from "../bookings/bookings.controller";
 
 export const rideRoutes = async (app: FastifyInstance) => {
   // GET /rides/search — any authenticated user (rider searching for rides)
@@ -37,5 +38,12 @@ export const rideRoutes = async (app: FastifyInstance) => {
     "/:id",
     { preHandler: [authenticate, requireMode("driver")] },
     ridesController.cancelRide.bind(ridesController),
+  );
+
+  // GET /rides/:rideId/bookings — driver sees all bookings on their ride
+  app.get(
+    "/:rideId/bookings",
+    { preHandler: [authenticate, requireMode("driver")] },
+    bookingsController.getRideBookings.bind(bookingsController),
   );
 };
