@@ -84,8 +84,8 @@ export class RidesService {
             ST_MakePoint($4, $5)::geography,
             $6, ST_MakePoint($7, $8)::geography,
             ST_MakeLine(
-            ST_MakePoint($4, $5)::geography,
-            ST_MakePoint($7, $8)::geography
+            ST_MakePoint($4, $5),
+            ST_MakePoint($7, $8)
             )::geography,
             $9, $10, $10, $11)
             RETURNING
