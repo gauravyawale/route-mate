@@ -121,7 +121,12 @@ export type BookingStatus =
   | "no_seat"
   | "no_show";
 
-export type PaymentStatus = "pending" | "success" | "failed" | "refunded";
+export type PaymentStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "refunded"
+  | "refund_failed";
 
 export type VehicleType = "car" | "bike";
 export type ActiveMode = "rider" | "driver";
@@ -199,6 +204,17 @@ export interface RequestBookingInput {
 
 export interface CancelBookingInput {
   reason?: string;
+}
+
+export interface CreatePaymentOrderInput {
+  booking_id: string;
+}
+
+export interface VerifyPaymentInput {
+  booking_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
 }
 
 // ─── Response DTOs ─────────────────────────────────────────
@@ -290,5 +306,26 @@ export interface RideDetailResponse {
     plate_number: string;
     vehicle_type: string;
     total_seats: number;
+  };
+}
+
+export interface PaymentResponse {
+  id: string;
+  booking_id: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  provider: string;
+  provider_ref: string | null;
+  attempt_number: number;
+  failure_reason: string | null;
+  refunded_at: Date | null;
+  created_at: Date;
+  // razorpay order details — client needs these to open payment UI
+  order?: {
+    id: string;
+    amount: number;
+    currency: string;
+    key_id: string; // client needs this to initialise Razorpay SDK
   };
 }

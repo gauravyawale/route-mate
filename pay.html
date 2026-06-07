@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <button id="rzp-button1">Pay Now</button>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        var options = {
+            "key": "",// Enter the Key ID generated from the Dashboard
+            "amount": "", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+            "currency": "INR",
+            "name": "Test App",
+            "description": "Test Transaction",
+            "order_id": "", //Pass the `id` obtained in the response of Step 1
+            "handler": function (response) {
+                alert("Payment ID: " + response.razorpay_payment_id +
+                    "\nSignature: " + response.razorpay_signature);
+                console.log(response); // Check browser console (F12) for full details
+            },
+
+            "prefill": {
+                "name": "", // Enter the customer's name
+                "email": "", // Enter the customer's email
+                "contact": "" // Enter the customer's phone number
+            },
+            "theme": { "color": "#3399cc" }
+        };
+        var rzp1 = new Razorpay(options);
+        document.getElementById('rzp-button1').onclick = function (e) {
+            rzp1.open();
+            e.preventDefault();
+        }
+    </script>
+</body>
+
+</html>
