@@ -28,3 +28,13 @@ export interface BookingJobData {
   riderId?: string;
   driverId?: string;
 }
+
+export const refundQueue = new Queue("refunds", {
+  connection: bullMQConnection,
+  defaultJobOptions: {
+    attempts: 3,
+    backoff: { type: "exponential", delay: 60000 }, // 1min, 2min, 4min
+    removeOnComplete: true,
+    removeOnFail: false, // keep for audit
+  },
+});

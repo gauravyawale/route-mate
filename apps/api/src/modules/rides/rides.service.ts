@@ -10,6 +10,7 @@ import {
 import { query, queryOne } from "../../infrastructure/db/client";
 import { AppError, NotFoundError } from "../../utils/errors";
 import { formatRide, formatRideDetail } from "../../utils/formatters";
+import { notifyRideStatusChanged } from "../../infrastructure/socket/notifications.js";
 
 export interface RideDetailRow {
   // ride fields
@@ -294,6 +295,21 @@ export class RidesService {
     );
 
     if (!updatedRide) throw new AppError("Failed to update ride status.");
+
+    // notify all paid riders of status change
+    const paidRiders = await query<{ rider_id: string }>(
+      `SELECT rider_id FROM bookings
+  WHERE ride_id = $1 AND status = 'paid'`,
+      [rideId],
+    );
+
+    paidRiders.forEach((r) => {
+      notifyRideStatusChanged({
+        riderUserId: r.rider_id,
+        rideId,
+        status: input.status,
+      });
+    });
 
     // 5. return full detail — reuse getRideById, no query duplication
     return this.getRideById(rideId);

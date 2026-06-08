@@ -9,6 +9,10 @@ import { razorpay } from "../../infrastructure/razorpay/client";
 import { bookingsService } from "../bookings/bookings.service";
 import { config } from "../../config/index.js";
 import { AppError, NotFoundError, UnauthorizedError } from "../../utils/errors";
+import {
+  notifyPaymentCompleted,
+  notifyNoSeat,
+} from "../../infrastructure/socket/notifications.js";
 
 interface PaymentRow {
   id: string;
@@ -289,6 +293,11 @@ export class PaymentsService {
 
         await bookingsService.markNoSeat(input.booking_id);
 
+        notifyNoSeat({
+          riderUserId: booking.rider_id,
+          bookingId: input.booking_id,
+        });
+
         throw new AppError(
           "Payment successful but no seats available. You will be refunded shortly.",
           409,
@@ -296,6 +305,33 @@ export class PaymentsService {
       }
       throw err;
     }
+
+    // fetch rider name and driver userId for notification
+    const bookingDetail = await queryOne<{
+      rider_name: string;
+      driver_user_id: string;
+      total_amount: string;
+    }>(
+      `SELECT
+        u.full_name AS rider_name,
+        du.id       AS driver_user_id,
+        b.total_amount AS total_amount
+        FROM bookings b
+        JOIN users u  ON u.id  = b.rider_id
+        JOIN rides r  ON r.id  = b.ride_id
+        JOIN driver_profiles dp ON dp.id = r.driver_id
+        JOIN users du ON du.id = dp.user_id
+        WHERE b.id = $1`,
+      [input.booking_id],
+    );
+
+    notifyPaymentCompleted({
+      driverUserId: bookingDetail!.driver_user_id,
+      bookingId: input.booking_id,
+      rideId: booking.ride_id,
+      riderName: bookingDetail!.rider_name,
+      amount: parseFloat(bookingDetail!.total_amount),
+    });
 
     return this.formatPayment(payment);
   }

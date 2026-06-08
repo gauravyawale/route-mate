@@ -10,7 +10,10 @@ import {
   queryOne,
   query,
 } from "../../infrastructure/db/client";
-import { bookingQueue } from "../../infrastructure/queue/bookingQueue";
+import {
+  bookingQueue,
+  refundQueue,
+} from "../../infrastructure/queue/bookingQueue";
 import {
   AppError,
   ConflictError,
@@ -18,6 +21,12 @@ import {
   UnauthorizedError,
 } from "../../utils/errors";
 import { BookingRow, formatBooking } from "../../utils/formatters";
+import {
+  notifyBookingRequested,
+  notifyBookingConfirmed,
+  notifyBookingCancelled,
+  notifyNoSeat,
+} from "../../infrastructure/socket/notifications.js";
 
 // ─── Internal row types ────────────────────────────────────
 // Never exported — DB implementation details only
@@ -179,8 +188,23 @@ export class BookingsService {
 
     if (!booking) throw new AppError("Failed to create booking.");
 
-    // 7. enqueue notification job for driver
-    // Phase 5 (Socket.io) will process this job and push to driver's socket
+    // fetch rider name for notification
+    const rider = await queryOne<{ full_name: string }>(
+      `SELECT full_name FROM users WHERE id = $1`,
+      [riderId],
+    );
+
+    // emit immediately via socket (user is online)
+    notifyBookingRequested({
+      driverUserId: ride.driver_user_id,
+      bookingId: booking.id,
+      rideId: input.ride_id,
+      riderName: rider?.full_name ?? "A rider",
+      seatsBooked: input.seats_booked,
+      hopInAddress: input.hop_in_address,
+    });
+
+    // enqueue as backup for offline delivery and analytics
     await bookingQueue.add("booking.requested", {
       bookingId: booking.id,
       rideId: input.ride_id,
@@ -245,6 +269,12 @@ export class BookingsService {
     );
 
     if (!updated) throw new AppError("Failed to confirm booking.");
+
+    notifyBookingConfirmed({
+      riderUserId: booking.rider_id,
+      bookingId,
+      rideId: booking.ride_id,
+    });
 
     // 3. notify rider — payment is now open
     await bookingQueue.add("booking.confirmed", {
@@ -331,8 +361,22 @@ export class BookingsService {
         );
       });
 
-      // enqueue refund job — Phase 4 worker processes this
+      // notify the other party
+      const notifyUserId = isRider ? booking.driver_user_id : booking.rider_id;
+      notifyBookingCancelled({
+        userId: notifyUserId,
+        bookingId,
+        rideId: booking.ride_id,
+      });
+
+      // enqueue refund job — processed by refund.worker.ts
       await bookingQueue.add("booking.cancelled", {
+        bookingId,
+        rideId: booking.ride_id,
+        riderId: booking.rider_id,
+      });
+
+      await refundQueue.add("process.refund", {
         bookingId,
         rideId: booking.ride_id,
         riderId: booking.rider_id,
