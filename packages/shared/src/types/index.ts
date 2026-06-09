@@ -9,6 +9,7 @@ export interface User {
   is_driver_approved: boolean;
   active_mode: "rider" | "driver";
   no_show_count: number;
+  role: "user" | "admin";
   created_at: Date;
   updated_at: Date;
 }
@@ -149,6 +150,8 @@ export interface SwitchModeInput {
   mode: "rider" | "driver";
 }
 
+export type UserRole = "user" | "admin";
+
 export interface AddVehicleInput {
   make: string;
   model: string;
@@ -229,6 +232,7 @@ export interface UserResponse {
   is_verified: boolean;
   is_driver_approved: boolean;
   active_mode: ActiveMode;
+  role: "user" | "admin";
 }
 
 export interface VehicleResponse {
@@ -327,5 +331,37 @@ export interface PaymentResponse {
     amount: number;
     currency: string;
     key_id: string; // client needs this to initialise Razorpay SDK
+  };
+}
+
+// Onboarding
+
+export interface ApplyDriverInput {
+  license_number: string;
+  license_expiry: string; // ISO date string e.g. "2028-12-31"
+}
+
+export interface ReviewDriverInput {
+  rejection_reason?: string;
+}
+
+export type DriverApplicationStatus = "pending" | "approved" | "rejected";
+
+export interface DriverApplicationResponse {
+  id: string;
+  user_id: string;
+  license_number: string;
+  license_expiry: string;
+  status: DriverApplicationStatus;
+  rejection_reason: string | null;
+  reviewed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+  // joined fields
+  applicant?: {
+    id: string;
+    full_name: string;
+    phone: string;
+    avatar_url: string | null;
   };
 }

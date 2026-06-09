@@ -96,3 +96,22 @@ export function notifyNoSeat(payload: {
     message: "Sorry, no seats available. You will be refunded shortly.",
   });
 }
+
+export function notifyDriverApproved(payload: { userIdToNotify: string }) {
+  getIO().to(payload.userIdToNotify).emit("driver.approved", {
+    message:
+      "Congratulations! Your driver application has been approved. Switch to driver mode to start offering rides.",
+  });
+}
+
+export function notifyDriverRejected(payload: {
+  userIdToNotify: string;
+  reason?: string;
+}) {
+  getIO()
+    .to(payload.userIdToNotify)
+    .emit("driver.rejected", {
+      reason: payload.reason ?? null,
+      message: "Your driver application was not approved. You may reapply.",
+    });
+}

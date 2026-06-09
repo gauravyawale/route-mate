@@ -53,3 +53,20 @@ export const requireVerified = async (
     throw new AppError("Phone number not verified.", 403, "NOT_VERIFIED");
   }
 };
+
+/**
+ * check user has admin role
+ * Use for all admin endpoints
+ */
+export const requireAdmin = async (
+  req: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> => {
+  if (!req.user) {
+    throw new UnauthorizedError("User not authenticated");
+  }
+
+  if (req.user.role !== "admin") {
+    throw new AppError("Admin access required.", 403, "FORBIDDEN");
+  }
+};
