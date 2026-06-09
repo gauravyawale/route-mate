@@ -8,7 +8,7 @@ import { BookingJobData } from "../bookingQueue";
  * Each job name maps to a different notification type
  */
 const worker = new Worker<BookingJobData>(
-  "bbokings",
+  "bookings",
   async (job: Job<BookingJobData>) => {
     switch (job.name) {
       case "booking.requested":
