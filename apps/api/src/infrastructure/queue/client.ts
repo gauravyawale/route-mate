@@ -10,5 +10,4 @@ export const bullMQConnection = {
   port: parseInt(redisUrl.port || "6379"),
   maxRetriesPerRequest: null as null, // required by BullMQ
   enableReadyCheck: false, // required by BullMQ
-  lazyConnect: false,
 };
