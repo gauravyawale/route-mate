@@ -12,6 +12,12 @@ const configSchema = z.object({
     .string()
     .min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),
   OTP_EXPIRY_SECONDS: z.string().transform(Number).default("300"),
+  RAZORPAY_KEY_ID: z.string().min(1, "RAZORPAY_KEY_ID is required"),
+  RAZORPAY_KEY_SECRET: z.string().min(1, "RAZORPAY_KEY_SECRET is required"),
+  FRONTEND_URL: z.string().optional(),
+  // RAZORPAY_WEBHOOK_SECRET: z
+  //   .string()
+  //   .min(1, "RAZORPAY_WEBHOOK_SECRET is required"),
 });
 
 const parsed = configSchema.safeParse(process.env);

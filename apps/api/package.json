@@ -8,18 +8,23 @@
     "start": "node dist/server.js",
     "test": "vitest",
     "migrate:up": "tsx --env-file=.env src/infrastructure/db/migrator.ts up",
-    "migrate:down": "tsx --env-file=.env src/infrastructure/db/migrator.ts down"
+    "migrate:down": "tsx --env-file=.env src/infrastructure/db/migrator.ts down",
+    "dev:worker": "tsx watch --env-file=.env src/worker.ts"
   },
   "dependencies": {
+    "@fastify/cors": "9",
+    "@fastify/helmet": "11",
     "@fastify/jwt": "^8.0.0",
+    "@fastify/rate-limit": "9",
     "@route-mate/shared": "*",
     "@types/node-pg-migrate": "^2.3.1",
     "bullmq": "^5.0.0",
     "fastify": "^4.26.0",
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
+    "razorpay": "^2.9.6",
     "redis": "^5.12.1",
-    "socket.io": "^4.7.0",
+    "socket.io": "^4.8.3",
     "umzug": "^3.8.3",
     "uuid": "^14.0.0",
     "zod": "^3.22.0"

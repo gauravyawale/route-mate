@@ -27,6 +27,7 @@ interface UserRow {
   active_mode: "rider" | "driver";
   is_verified: boolean;
   is_driver_approved: boolean;
+  role: "user" | "admin";
 }
 
 export const authenticate = async (
@@ -56,9 +57,9 @@ export const authenticate = async (
 
   // Check user status in DB
   const user = await queryOne<UserRow>(
-    `SELECT id, phone, active_mode, is_verified, is_driver_approved
-     FROM users
-     WHERE id = $1`,
+    `SELECT id, phone, active_mode, is_verified, is_driver_approved, role
+   FROM users
+   WHERE id = $1`,
     [paylaod.sub],
   );
 

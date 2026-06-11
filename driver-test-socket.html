@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Socket Test</title>
+    <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+    <h1>Socket.io Test</h1>
+    <div id="log"></div>
+
+    <script>
+        const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI3Njc4OWQ0MS02YzExLTQ4ZjYtOTM2MS1hNzBjYjBjNWU0NmIiLCJtb2RlIjoiZHJpdmVyIiwiaWF0IjoxNzgwODU1MjA3LCJleHAiOjE3ODA4NTYxMDd9.c7uRpGc7Z9nEM2E4rFDhKu_c9sXYOFx2-QUNTvsWiwU";
+
+        const socket = io("http://localhost:3000", {
+            auth: { token },
+            transports: ["websocket", "polling"]
+        });
+
+        function log(msg, color = "black") {
+            console.log(msg);
+            const div = document.getElementById("log");
+            div.innerHTML += `<p style="color:${color}">${msg}</p>`;
+        }
+
+        socket.on("connect", () => {
+            log("✅ Connected: " + socket.id, "green");
+        });
+
+        socket.on("connect_error", (err) => {
+            log("❌ Error: " + err.message, "red");
+        });
+
+        socket.on("booking.requested", (data) => {
+            log("📦 booking.requested: " + JSON.stringify(data), "blue");
+        });
+
+        socket.on("booking.confirmed", (data) => {
+            log("✅ booking.confirmed: " + JSON.stringify(data), "blue");
+        });
+
+        socket.on("payment.completed", (data) => {
+            log("💰 payment.completed: " + JSON.stringify(data), "purple");
+        });
+
+        socket.on("ride.status_changed", (data) => {
+            log("🚗 ride.status_changed: " + JSON.stringify(data), "orange");
+        });
+
+        socket.on("booking.no_seat", (data) => {
+            log("❌ booking.no_seat: " + JSON.stringify(data), "red");
+        });
+    </script>
+</body>
+
+</html>

@@ -43,6 +43,47 @@ services:
       retries: 5
     command: redis-server --appendonly yes
 
+  # ────────────────────────────────────────────────
+  # BullMQ Worker
+  # ────────────────────────────────────────────────
+  worker:
+    image: node:20-alpine
+    container_name: route-mate-worker
+    restart: unless-stopped
+    working_dir: /app
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    volumes:
+      - ../:/app
+      - /app/node_modules                    # anonymous volume shields root node_modules
+      - /app/apps/api/node_modules           # shields api node_modules
+      - /app/packages/shared/node_modules    # shields shared node_modules
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://routemate:routemate_dev@postgres:5432/routemate_db
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - OTP_EXPIRY_SECONDS=300
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - RAZORPAY_WEBHOOK_SECRET=${RAZORPAY_WEBHOOK_SECRET}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - route-mate-network
+    command: >
+      sh -c "
+        cd /app &&
+        yarn install --frozen-lockfile &&
+        yarn workspace @route-mate/shared build &&
+        yarn workspace @route-mate/api dev:worker
+      "
+
 # ────────────────────────────────────────────────
 # Volumes — persist data between container restarts
 # ────────────────────────────────────────────────

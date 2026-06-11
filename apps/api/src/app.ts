@@ -10,6 +10,9 @@ import rateLimit from "@fastify/rate-limit";
 import { config } from "./config/index.js";
 import { vehicleRoutes } from "./modules/vehicles/vehicles.routes.js";
 import { rideRoutes } from "./modules/rides/rides.routes.js";
+import { bookingRoutes } from "./modules/bookings/bookings.routes";
+import { paymentRoutes } from "./modules/payments/payments.routes.js";
+import { onboardingRoutes } from "./modules/onboarding/onboarding.routes.js";
 
 const app = Fastify({
   logger: {
@@ -23,6 +26,34 @@ const app = Fastify({
 });
 
 // TODO: Add more security headers and configure CORS properly in production
+// helmet sets various HTTP headers to help protect the app
+// prevents common vulnerabilities like XSS, clickjacking, etc.
+app.register(helmet, {
+  contentSecurityPolicy: false, // disable for API — no HTML served
+});
+
+// cors controls which origins can access the API — configure for production
+app.register(cors, {
+  origin:
+    config.NODE_ENV === "production"
+      ? ["https://yourdomain.com"] // replace with real domain
+      : true, // allow all in development
+  methods: ["GET", "POST", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+});
+
+// rate limiting to prevent abuse — adjust limits as needed
+app.register(rateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+  errorResponseBuilder: () => ({
+    error: {
+      statusCode: 429,
+      message: "Too many requests. Please slow down.",
+      code: "RATE_LIMITED",
+    },
+  }),
+});
 
 // ─── Register Routes ───────────────────────────────────────
 app.register(authRoutes, { prefix: "/api/v1/auth" });
@@ -32,6 +63,12 @@ app.register(userRoutes, { prefix: "/api/v1/users" });
 app.register(vehicleRoutes, { prefix: "/api/v1/users" });
 
 app.register(rideRoutes, { prefix: "/api/v1/rides" });
+
+app.register(bookingRoutes, { prefix: "/api/v1/bookings" });
+
+app.register(paymentRoutes, { prefix: "/api/v1/payments" });
+
+app.register(onboardingRoutes, { prefix: "/api/v1/onboarding" });
 // ─── Register Middleware ───────────────────────────────────
 // Error handler
 registerErrorhandler(app);

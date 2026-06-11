@@ -9,6 +9,7 @@ export interface User {
   is_driver_approved: boolean;
   active_mode: "rider" | "driver";
   no_show_count: number;
+  role: "user" | "admin";
   created_at: Date;
   updated_at: Date;
 }
@@ -116,13 +117,17 @@ export type RideStatus =
 export type BookingStatus =
   | "pending"
   | "confirmed"
-  | "payment_pending"
   | "paid"
   | "cancelled"
-  | "expired"
+  | "no_seat"
   | "no_show";
 
-export type PaymentStatus = "pending" | "success" | "failed" | "refunded";
+export type PaymentStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "refunded"
+  | "refund_failed";
 
 export type VehicleType = "car" | "bike";
 export type ActiveMode = "rider" | "driver";
@@ -144,6 +149,8 @@ export interface UpdateProfileInput {
 export interface SwitchModeInput {
   mode: "rider" | "driver";
 }
+
+export type UserRole = "user" | "admin";
 
 export interface AddVehicleInput {
   make: string;
@@ -186,6 +193,33 @@ export interface UpdateRideStatusInput {
   cancelled_reason?: string;
 }
 
+export interface RequestBookingInput {
+  ride_id: string;
+  seats_booked: number;
+  // rider's specific pickup and dropoff within the ride's corridor
+  hop_in_address: string;
+  hop_in_lat: number;
+  hop_in_lng: number;
+  hop_off_address: string;
+  hop_off_lat: number;
+  hop_off_lng: number;
+}
+
+export interface CancelBookingInput {
+  reason?: string;
+}
+
+export interface CreatePaymentOrderInput {
+  booking_id: string;
+}
+
+export interface VerifyPaymentInput {
+  booking_id: string;
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}
+
 // ─── Response DTOs ─────────────────────────────────────────
 // Subset of internal types — only what clients need
 
@@ -198,6 +232,7 @@ export interface UserResponse {
   is_verified: boolean;
   is_driver_approved: boolean;
   active_mode: ActiveMode;
+  role: "user" | "admin";
 }
 
 export interface VehicleResponse {
@@ -225,13 +260,28 @@ export interface RideResponse {
 
 export interface BookingResponse {
   id: string;
-  ride_id: string;
+  status: BookingStatus;
   seats_booked: number;
   total_amount: number;
-  status: BookingStatus;
-  expires_at: Date | null;
   confirmed_at: Date | null;
   paid_at: Date | null;
+  created_at: Date;
+  ride: {
+    id: string;
+    origin_address: string;
+    destination_address: string;
+    scheduled_at: Date;
+    price_per_seat: number;
+    status: RideStatus;
+  };
+  hop_in_address: string | null;
+  hop_off_address: string | null;
+  rider: {
+    id: string;
+    full_name: string;
+    avatar_url: string | null;
+    phone: string;
+  };
 }
 
 export interface RideDetailResponse {
@@ -260,5 +310,58 @@ export interface RideDetailResponse {
     plate_number: string;
     vehicle_type: string;
     total_seats: number;
+  };
+}
+
+export interface PaymentResponse {
+  id: string;
+  booking_id: string;
+  amount: number;
+  currency: string;
+  status: PaymentStatus;
+  provider: string;
+  provider_ref: string | null;
+  attempt_number: number;
+  failure_reason: string | null;
+  refunded_at: Date | null;
+  created_at: Date;
+  // razorpay order details — client needs these to open payment UI
+  order?: {
+    id: string;
+    amount: number;
+    currency: string;
+    key_id: string; // client needs this to initialise Razorpay SDK
+  };
+}
+
+// Onboarding
+
+export interface ApplyDriverInput {
+  license_number: string;
+  license_expiry: string; // ISO date string e.g. "2028-12-31"
+}
+
+export interface ReviewDriverInput {
+  rejection_reason?: string;
+}
+
+export type DriverApplicationStatus = "pending" | "approved" | "rejected";
+
+export interface DriverApplicationResponse {
+  id: string;
+  user_id: string;
+  license_number: string;
+  license_expiry: string;
+  status: DriverApplicationStatus;
+  rejection_reason: string | null;
+  reviewed_at: Date | null;
+  created_at: Date;
+  updated_at: Date;
+  // joined fields
+  applicant?: {
+    id: string;
+    full_name: string;
+    phone: string;
+    avatar_url: string | null;
   };
 }
