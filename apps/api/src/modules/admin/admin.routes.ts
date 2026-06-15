@@ -15,4 +15,16 @@ export const adminRoutes = async (app: FastifyInstance) => {
     { preHandler: [authenticate, requireAdmin] },
     adminController.getRides.bind(adminController),
   );
+
+  app.get(
+    "/rides/:rideId",
+    { preHandler: [authenticate, requireAdmin] },
+    adminController.getRideDetail.bind(adminController),
+  );
+
+  app.get(
+    "/users",
+    { preHandler: [authenticate, requireAdmin] },
+    adminController.getUsers.bind(adminController),
+  );
 };
