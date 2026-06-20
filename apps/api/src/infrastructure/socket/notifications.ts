@@ -116,17 +116,49 @@ export function notifyDriverRejected(payload: {
     });
 }
 
+/**
+ * Admin notifications
+ * These emit to the "admins" room — all connected admin users receive them
+ */
 export function notifyAdminNewApplication(payload: {
   applicantName: string;
-  applicationId: string;
+  userId: string;
 }) {
-  // broadcast to all connected admins
-  // we use a dedicated "admins" room instead of per-user room
   getIO()
     .to("admins")
     .emit("admin.new_application", {
-      applicationId: payload.applicationId,
+      userId: payload.userId,
       applicantName: payload.applicantName,
-      message: `${payload.applicantName} applied to become a driver.`,
+      message: `${payload.applicantName} submitted a driver application.`,
+    });
+}
+
+export function notifyAdminNewBooking(payload: {
+  rideId: string;
+  riderName: string;
+  amount: number;
+}) {
+  getIO()
+    .to("admins")
+    .emit("admin.new_booking", {
+      rideId: payload.rideId,
+      riderName: payload.riderName,
+      amount: payload.amount,
+      message: `New booking by ${payload.riderName} — ₹${payload.amount}`,
+    });
+}
+
+export function notifyAdminPaymentCompleted(payload: {
+  rideId: string;
+  riderName: string;
+  amount: number;
+}) {
+  getIO()
+    .to("admins")
+    .emit("admin.payment_completed", {
+      rideId: payload.rideId,
+      riderName: payload.riderName,
+      amount: payload.amount,
+      message: `Payment of ₹${payload.amount} received from ${payload.riderName}`,
     });
 }

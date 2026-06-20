@@ -90,13 +90,16 @@ export function initSocket(httpServer: HttpServer): Server {
     // io.to(userId).emit(...) will reach this socket
     socket.join(userId);
 
-    // also join "admins" room if this user is an admin
-    // we need role info — fetch it during auth middleware instead
-    const role = (socket as AuthenticatedSocket).role;
-    if (role === "admin") {
-      socket.join("admins");
-      console.log(`[socket] admin ${userId} joined admins room`);
-    }
+    // join admin room if user is admin
+    // fetch role from DB — already have the userId from JWT
+    queryOne<{ role: string }>(`SELECT role FROM users WHERE id = $1`, [
+      userId,
+    ]).then((user) => {
+      if (user?.role === "admin") {
+        socket.join("admins");
+        console.log(`[socket] admin ${userId} joined admins room`);
+      }
+    });
 
     console.log(`[socket] user ${userId} connected — socket ${socket.id}`);
 

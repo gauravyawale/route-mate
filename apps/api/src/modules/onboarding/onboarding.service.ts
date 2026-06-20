@@ -12,8 +12,8 @@ import { AppError, ConflictError, NotFoundError } from "../../utils/errors.js";
 import {
   notifyDriverApproved,
   notifyDriverRejected,
+  notifyAdminNewApplication,
 } from "../../infrastructure/socket/notifications.js";
-import { notifyAdminNewApplication } from "../../infrastructure/socket/notifications.js";
 
 // Internal row types
 
@@ -143,8 +143,8 @@ export class OnboardingService {
 
     // notify all connected admins
     notifyAdminNewApplication({
-      applicantName: result.applicant?.full_name ?? "A user",
-      applicationId: result.id,
+      userId,
+      applicantName: application?.applicant_full_name ?? "A user",
     });
 
     return result;
