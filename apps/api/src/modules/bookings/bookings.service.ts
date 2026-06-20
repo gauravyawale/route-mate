@@ -26,6 +26,7 @@ import {
   notifyBookingConfirmed,
   notifyBookingCancelled,
   notifyNoSeat,
+  notifyAdminNewBooking,
 } from "../../infrastructure/socket/notifications.js";
 
 // ─── Internal row types ────────────────────────────────────
@@ -210,6 +211,13 @@ export class BookingsService {
       rideId: input.ride_id,
       riderId,
       driverId: ride.driver_user_id,
+    });
+
+    // notify admins
+    notifyAdminNewBooking({
+      rideId: input.ride_id,
+      riderName: rider?.full_name ?? "A rider",
+      amount: totalAmount,
     });
 
     // 8. fetch full booking with JOINs for response

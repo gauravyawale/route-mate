@@ -12,6 +12,7 @@ import { AppError, NotFoundError, UnauthorizedError } from "../../utils/errors";
 import {
   notifyPaymentCompleted,
   notifyNoSeat,
+  notifyAdminPaymentCompleted,
 } from "../../infrastructure/socket/notifications.js";
 
 interface PaymentRow {
@@ -328,6 +329,12 @@ export class PaymentsService {
     notifyPaymentCompleted({
       driverUserId: bookingDetail!.driver_user_id,
       bookingId: input.booking_id,
+      rideId: booking.ride_id,
+      riderName: bookingDetail!.rider_name,
+      amount: parseFloat(bookingDetail!.total_amount),
+    });
+
+    notifyAdminPaymentCompleted({
       rideId: booking.ride_id,
       riderName: bookingDetail!.rider_name,
       amount: parseFloat(bookingDetail!.total_amount),
