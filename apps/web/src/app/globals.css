@@ -1,0 +1,147 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius: var(--radius);
+}
+
+:root {
+  /* Material Sage & Gold — Light Mode */
+
+  --background: 100 25% 97%; /* #F7FAF7 — soft sage-gray */
+  --foreground: 200 9% 19%; /* #2F3437 — charcoal */
+
+  --card: 0 0% 100%; /* #FFFFFF */
+  --card-foreground: 200 9% 19%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 200 9% 19%;
+
+  /* Primary — Mustard Gold */
+  --primary: 42 73% 60%; /* #E7BB46 */
+  --primary-foreground: 200 9% 19%;
+
+  /* Secondary — Muted Sage Green */
+  --secondary: 134 31% 65%; /* #80BB8F */
+  --secondary-foreground: 0 0% 100%;
+
+  /* Muted */
+  --muted: 100 15% 94%;
+  --muted-foreground: 220 9% 46%; /* #6B7280 */
+
+  /* Accent — Soft Green */
+  --accent: 142 31% 56%; /* #73B48A */
+  --accent-foreground: 0 0% 100%;
+
+  /* Semantic — status colors */
+  --success: 142 70% 31%; /* #1A8942 */
+  --success-foreground: 0 0% 100%;
+  --warning: 42 73% 60%; /* #E7BB46 */
+  --warning-foreground: 200 9% 19%;
+  --destructive: 4 90% 58%; /* #F44336 */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 200 9% 86%; /* #DADFE0 */
+  --input: 200 9% 86%;
+  --ring: 42 73% 60%;
+
+  --radius: 0.75rem; /* 12px — Material rounded corners */
+
+  /* Sidebar — light with mustard gold active states */
+  --sidebar: 0 0% 100%;
+  --sidebar-foreground: 200 9% 19%;
+  --sidebar-muted: 100 15% 95%;
+  --sidebar-muted-foreground: 220 9% 46%;
+  --sidebar-accent: 42 73% 60%; /* #E7BB46 */
+  --sidebar-border: 200 9% 90%;
+  --sidebar-active: 42 60% 93%; /* light gold tint for active bg */
+}
+
+.dark {
+  /* Material Sage & Gold — Dark Mode */
+
+  --background: 200 15% 9%; /* darker, more contrast with cards */
+  --foreground: 0 0% 95%; /* near white — was too dim */
+
+  --card: 200 12% 16%; /* lighter than background for separation */
+  --card-foreground: 0 0% 95%;
+
+  --popover: 200 12% 16%;
+  --popover-foreground: 0 0% 95%;
+
+  --primary: 42 73% 60%; /* #E7BB46 — keep gold prominent */
+  --primary-foreground: 200 12% 12%; /* dark text on gold for contrast */
+
+  --secondary: 134 25% 45%;
+  --secondary-foreground: 0 0% 100%;
+
+  --muted: 200 10% 22%;
+  --muted-foreground: 220 9% 70%; /* lighter — was too dark to read */
+
+  --accent: 142 31% 55%;
+  --accent-foreground: 0 0% 100%;
+
+  --success: 142 55% 45%; /* brighter for dark bg visibility */
+  --success-foreground: 0 0% 100%;
+  --warning: 42 73% 60%;
+  --warning-foreground: 200 12% 12%;
+  --destructive: 4 80% 62%; /* brighter red for dark bg */
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 200 10% 26%;
+  --input: 200 10% 26%;
+  --ring: 42 73% 60%;
+
+  /* Sidebar — dark surface, gold active states */
+  --sidebar: 200 12% 13%;
+  --sidebar-foreground: 0 0% 95%;
+  --sidebar-muted: 200 10% 18%;
+  --sidebar-muted-foreground: 220 9% 70%;
+  --sidebar-accent: 42 73% 60%;
+  --sidebar-border: 200 10% 22%;
+  --sidebar-active: 42 50% 22%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings:
+    "rlig" 1,
+    "calt" 1;
+}
+
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}

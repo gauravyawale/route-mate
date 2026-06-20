@@ -13,6 +13,7 @@ import {
   notifyDriverApproved,
   notifyDriverRejected,
 } from "../../infrastructure/socket/notifications.js";
+import { notifyAdminNewApplication } from "../../infrastructure/socket/notifications.js";
 
 // Internal row types
 
@@ -138,7 +139,15 @@ export class OnboardingService {
 
     if (!application) throw new AppError("Failed to submit application.");
 
-    return this.getApplicationByUserId(userId);
+    const result = await this.getApplicationByUserId(userId);
+
+    // notify all connected admins
+    notifyAdminNewApplication({
+      applicantName: result.applicant?.full_name ?? "A user",
+      applicationId: result.id,
+    });
+
+    return result;
   }
 
   /**

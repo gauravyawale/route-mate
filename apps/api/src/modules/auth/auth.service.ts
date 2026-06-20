@@ -101,6 +101,15 @@ const sendSms = async (phone: string, otp: string): Promise<void> => {
   throw new AppError("SMS sending not implemented", 501, "SMS_NOT_IMPLEMENTED");
 };
 
+/**
+ * Combine country code + national number into E.164 format
+ * This is the single canonical phone format used everywhere:
+ * Redis keys, DB storage, JWT — never store/lookup parts separately
+ */
+const toE164 = (countryCode: string, phone: string): string => {
+  return `${countryCode}${phone}`;
+};
+
 // --- Auth Service Functions --------------------------------
 
 export class AuthService {
@@ -108,13 +117,17 @@ export class AuthService {
    * Send OTP
    * Rate limited: max 3 requests per 10 minutes
    */
-  async sendOtp({ phone }: SendOtpInput): Promise<{ message: string }> {
+  async sendOtp({
+    country_code,
+    phone,
+  }: SendOtpInput): Promise<{ message: string }> {
+    const e164Phone = toE164(country_code, phone);
+
     // Rate limit check
-    const requestKey = otpRequestKey(phone);
+    const requestKey = otpRequestKey(e164Phone);
     const requestCount = await redis.incr(requestKey);
 
     if (requestCount === 1) {
-      // First request, set expiry
       await redis.expire(requestKey, AUTH.OTP_RATE_WINDOW_SECONDS);
     }
 
@@ -125,18 +138,13 @@ export class AuthService {
       );
     }
 
-    // Generate and hash OTP
     const otp = generateOtp();
     const hashedOtp = hashOtp(otp);
 
-    // Store hashed OTP in Redis with expiry
-    await redis.setEx(otpKey(phone), AUTH.OTP_EXPIRY_SECONDS, hashedOtp);
+    await redis.setEx(otpKey(e164Phone), AUTH.OTP_EXPIRY_SECONDS, hashedOtp);
+    await redis.del(otpAttemptsKey(e164Phone));
 
-    // reset OTP attempts on new OTP generation
-    await redis.del(otpAttemptsKey(phone));
-
-    // Send OTP via SMS
-    await sendSms(phone, otp);
+    await sendSms(e164Phone, otp);
 
     return { message: "OTP sent successfully" };
   }
@@ -146,9 +154,14 @@ export class AuthService {
    * Rate limited: max 5 attempts per OTP
    * Upsert: creates user if first time, finds if returning user
    */
-  async verifyOtp({ phone, otp }: VerifyOtpInput): Promise<AuthResult> {
-    // Check OTP exists in Redis
-    const storedHash = await redis.get(otpKey(phone));
+  async verifyOtp({
+    country_code,
+    phone,
+    otp,
+  }: VerifyOtpInput): Promise<AuthResult> {
+    const e164Phone = toE164(country_code, phone);
+
+    const storedHash = await redis.get(otpKey(e164Phone));
 
     if (!storedHash) {
       throw new AppError(
@@ -158,24 +171,20 @@ export class AuthService {
       );
     }
 
-    // Check OTP attempts
-    const attemptsKey = otpAttemptsKey(phone);
+    const attemptsKey = otpAttemptsKey(e164Phone);
     const attempts = await redis.incr(attemptsKey);
 
     if (attempts === 1) {
-      // Sync attempt window with OTP expiry
       await redis.expire(attemptsKey, AUTH.OTP_EXPIRY_SECONDS);
     }
 
     if (attempts > AUTH.MAX_OTP_ATTEMPTS) {
-      // Invalidate OTP- force them to request a new one
-      await redis.del(otpKey(phone));
+      await redis.del(otpKey(e164Phone));
       throw new TooManyRequestsError(
         "Too many OTP attempts. Please request a new OTP.",
       );
     }
 
-    // Verify OTP
     const hashedInput = hashOtp(otp);
 
     if (hashedInput !== storedHash) {
@@ -187,32 +196,29 @@ export class AuthService {
       );
     }
 
-    // OTP valid- delete immediately to prevent reuse
-    await redis.del(otpKey(phone));
-    await redis.del(otpAttemptsKey(phone));
-    await redis.del(otpRequestKey(phone));
+    await redis.del(otpKey(e164Phone));
+    await redis.del(otpAttemptsKey(e164Phone));
+    await redis.del(otpRequestKey(e164Phone));
 
-    // Check if user exists in DB
     let isNewUser = false;
 
-    let user = await queryOne<User>("SELECT * FROM users WHERE PHONE = $1", [
-      phone,
+    let user = await queryOne<User>("SELECT * FROM users WHERE phone = $1", [
+      e164Phone,
     ]);
 
     if (!user) {
       isNewUser = true;
       user = await queryOne<User>(
         `INSERT INTO users (phone, full_name, is_verified)
-                VALUES ($1, $2, TRUE)
-                RETURNING *`,
-        [phone, ""],
+              VALUES ($1, $2, TRUE)
+              RETURNING *`,
+        [e164Phone, ""],
       );
     } else {
-      // mark existing user as verified if not already
       if (!user.is_verified) {
         user = await queryOne<User>(
           `UPDATE users SET is_verified = TRUE, updated_at = NOW()
-                    WHERE id = $1 RETURNING *`,
+                  WHERE id = $1 RETURNING *`,
           [user.id],
         );
       }
@@ -220,14 +226,9 @@ export class AuthService {
 
     if (!user) throw new Error("Failed to create or find user");
 
-    // Generate tokens
     const tokens = await this.issueTokenPair(user.id, user.active_mode);
 
-    return {
-      user,
-      tokens,
-      isNewUser,
-    };
+    return { user, tokens, isNewUser };
   }
 
   /**

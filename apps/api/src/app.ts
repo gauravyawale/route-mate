@@ -13,6 +13,7 @@ import { rideRoutes } from "./modules/rides/rides.routes.js";
 import { bookingRoutes } from "./modules/bookings/bookings.routes";
 import { paymentRoutes } from "./modules/payments/payments.routes.js";
 import { onboardingRoutes } from "./modules/onboarding/onboarding.routes.js";
+import { adminRoutes } from "./modules/admin/admin.routes.js";
 
 const app = Fastify({
   logger: {
@@ -69,6 +70,8 @@ app.register(bookingRoutes, { prefix: "/api/v1/bookings" });
 app.register(paymentRoutes, { prefix: "/api/v1/payments" });
 
 app.register(onboardingRoutes, { prefix: "/api/v1/onboarding" });
+
+app.register(adminRoutes, { prefix: "/api/v1/admin" });
 // ─── Register Middleware ───────────────────────────────────
 // Error handler
 registerErrorhandler(app);
