@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { setTokens, clearTokens } from "../lib/auth";
+import { disconnectSocket } from "@/lib/socket";
 
 interface AdminUser {
   id: string;
@@ -26,6 +27,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: () => {
     clearTokens();
+    disconnectSocket();
     set({ user: null, isAuthenticated: false });
   },
 }));

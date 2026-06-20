@@ -24,8 +24,8 @@ import {
 const phoneSchema = z.object({
   phone: z
     .string()
-    .min(10, "Enter a valid phone number")
-    .regex(/^\+?[0-9]{10,15}$/, "Enter a valid phone number"),
+    .length(10, "Enter a 10-digit mobile number")
+    .regex(/^[6-9]\d{9}$/, "Enter a valid Indian mobile number"),
 });
 
 const otpSchema = z.object({
@@ -73,7 +73,10 @@ export default function LoginPage() {
   const onSendOtp = async (data: PhoneForm) => {
     setIsLoading(true);
     try {
-      await api.post("/api/v1/auth/send-otp", { phone: data.phone });
+      await api.post("/api/v1/auth/send-otp", {
+        country_code: "+91",
+        phone: data.phone,
+      });
       setPhone(data.phone);
       setStep("otp");
       toast.success("OTP sent to your phone.");
@@ -89,6 +92,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const res = await api.post("/api/v1/auth/verify-otp", {
+        country_code: "+91",
         phone,
         otp: data.otp,
       });
@@ -151,12 +155,18 @@ export default function LoginPage() {
             >
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  placeholder="+919876543210"
-                  {...phoneForm.register("phone")}
-                  disabled={isLoading}
-                />
+                <div className="flex gap-2">
+                  <div className="flex items-center justify-center px-3 rounded-md border bg-muted text-sm text-muted-foreground">
+                    +91
+                  </div>
+                  <Input
+                    id="phone"
+                    placeholder="9876543210"
+                    maxLength={10}
+                    {...phoneForm.register("phone")}
+                    disabled={isLoading}
+                  />
+                </div>
                 {phoneForm.formState.errors.phone && (
                   <p className="text-sm text-red-500">
                     {phoneForm.formState.errors.phone.message}

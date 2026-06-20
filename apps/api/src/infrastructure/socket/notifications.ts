@@ -115,3 +115,18 @@ export function notifyDriverRejected(payload: {
       message: "Your driver application was not approved. You may reapply.",
     });
 }
+
+export function notifyAdminNewApplication(payload: {
+  applicantName: string;
+  applicationId: string;
+}) {
+  // broadcast to all connected admins
+  // we use a dedicated "admins" room instead of per-user room
+  getIO()
+    .to("admins")
+    .emit("admin.new_application", {
+      applicationId: payload.applicationId,
+      applicantName: payload.applicantName,
+      message: `${payload.applicantName} applied to become a driver.`,
+    });
+}

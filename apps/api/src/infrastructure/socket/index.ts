@@ -13,6 +13,7 @@ interface TokenPayload {
 // Extend Socket to carry authenticated user info
 interface AuthenticatedSocket extends Socket {
   userId: string;
+  role: string;
 }
 
 /**
@@ -59,8 +60,8 @@ export function initSocket(httpServer: HttpServer): Server {
       const payload = jwt.verify(token, config.JWT_SECRET) as TokenPayload;
 
       // verify user exists in DB
-      const user = await queryOne<{ id: string }>(
-        `SELECT id FROM users WHERE id = $1`,
+      const user = await queryOne<{ id: string; role: string }>(
+        `SELECT id, role FROM users WHERE id = $1`,
         [payload.sub],
       );
 
@@ -70,7 +71,7 @@ export function initSocket(httpServer: HttpServer): Server {
 
       // attach userId to socket for later use in event handlers
       (socket as AuthenticatedSocket).userId = payload.sub;
-
+      (socket as AuthenticatedSocket).role = user.role;
       next();
     } catch (err) {
       next(new Error("Invalid or expired token."));
@@ -88,6 +89,14 @@ export function initSocket(httpServer: HttpServer): Server {
     // join room for this user
     // io.to(userId).emit(...) will reach this socket
     socket.join(userId);
+
+    // also join "admins" room if this user is an admin
+    // we need role info — fetch it during auth middleware instead
+    const role = (socket as AuthenticatedSocket).role;
+    if (role === "admin") {
+      socket.join("admins");
+      console.log(`[socket] admin ${userId} joined admins room`);
+    }
 
     console.log(`[socket] user ${userId} connected — socket ${socket.id}`);
 

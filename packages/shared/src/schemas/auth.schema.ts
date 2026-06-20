@@ -1,15 +1,26 @@
 import { z } from "zod";
 
+// v1 — India only. Add more codes here when expanding.
+const SUPPORTED_COUNTRY_CODES = ["+91"] as const;
+
 export const sendOtpSchema = z.object({
+  country_code: z.enum(SUPPORTED_COUNTRY_CODES, {
+    message: "Unsupported country code. Only +91 (India) is supported.",
+  }),
   phone: z
     .string()
-    .regex(/^\+91[6-9]\d{9}$/, "Invalid Indian phone number")
-    .min(13)
-    .max(13),
+    .length(10, "Phone number must be 10 digits")
+    .regex(/^[6-9]\d{9}$/, "Enter a valid Indian mobile number"),
 });
 
 export const verifyOtpSchema = z.object({
-  phone: z.string().regex(/^\+91[6-9]\d{9}$/, "Invalid Indian phone number"),
+  country_code: z.enum(SUPPORTED_COUNTRY_CODES, {
+    message: "Unsupported country code. Only +91 (India) is supported.",
+  }),
+  phone: z
+    .string()
+    .length(10, "Phone number must be 10 digits")
+    .regex(/^[6-9]\d{9}$/, "Enter a valid Indian mobile number"),
   otp: z
     .string()
     .length(6, "OTP must be 6 digits")

@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import Sidebar from "@/components/admin/Sidebar";
+import { useAdminSocket } from "@/hooks/useAdminSocket";
 
 export default function DashboardLayout({
   children,
@@ -20,6 +21,8 @@ export default function DashboardLayout({
       router.push("/login");
     }
   }, [router]);
+
+  useAdminSocket();
 
   return (
     <div className="flex min-h-screen bg-background">
