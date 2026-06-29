@@ -1,10 +1,12 @@
 {
   "name": "route-mate",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ]
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
