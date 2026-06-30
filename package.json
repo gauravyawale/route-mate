@@ -5,6 +5,10 @@
     "packages": [
       "apps/*",
       "packages/*"
+    ],
+    "nohoist": [
+      "**/mobile/**",
+      "**/mobile"
     ]
   },
   "scripts": {

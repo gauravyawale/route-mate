@@ -1,0 +1,43 @@
+{
+  "expo": {
+    "name": "Route Mate",
+    "slug": "route-mate",
+    "version": "1.0.0",
+    "scheme": "routemate",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F8FAFC"
+    },
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#F8FAFC"
+      },
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDybBbNoxC8PfzJtI7FTe1lg_VITiGftP0"
+        }
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Route Mate to use your location to find rides near you."
+        }
+      ],
+      "expo-font"
+    ]
+  }
+}
