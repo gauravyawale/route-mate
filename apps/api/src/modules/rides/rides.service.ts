@@ -292,22 +292,22 @@ export class RidesService {
     const now = new Date();
     const updatedRide = await queryOne<{ id: string }>(
       `UPDATE rides SET
-      status            = $1,
-      cancelled_reason  = CASE WHEN $1 = 'cancelled'
-                            THEN $2
-                            ELSE cancelled_reason
-                          END,
-      started_at        = CASE WHEN $1 = 'in_progress'
-                            THEN $3
-                            ELSE started_at
-                          END,
-      completed_at      = CASE WHEN $1 = 'completed'
-                            THEN $3
-                            ELSE completed_at
-                          END,
-      updated_at        = $3
-    WHERE id = $4
-    RETURNING id`,
+    status            = $1::text,
+    cancelled_reason  = CASE WHEN $1::text = 'cancelled'
+                          THEN $2
+                          ELSE cancelled_reason
+                        END,
+    started_at        = CASE WHEN $1::text = 'in_progress'
+                          THEN $3
+                          ELSE started_at
+                        END,
+    completed_at      = CASE WHEN $1::text = 'completed'
+                          THEN $3
+                          ELSE completed_at
+                        END,
+    updated_at        = $3
+  WHERE id = $4
+  RETURNING id`,
       [input.status, input.cancelled_reason ?? null, now, rideId],
     );
 
@@ -385,6 +385,21 @@ export class RidesService {
       snapped_lng: result.snapped_lng,
       fraction_along_route: result.fraction_along_route,
     };
+  }
+
+  async getMyRides(userId: string): Promise<RideResponse[]> {
+    const rides = await query<Ride>(
+      `SELECT r.id, r.driver_id, r.vehicle_id,
+      r.origin_address, r.destination_address,
+      r.scheduled_at, r.seats_total, r.seats_available,
+      r.price_per_seat, r.status, r.created_at, r.updated_at
+    FROM rides r
+    JOIN driver_profiles dp ON dp.id = r.driver_id
+    WHERE dp.user_id = $1
+    ORDER BY r.scheduled_at DESC`,
+      [userId],
+    );
+    return rides.map(formatRide);
   }
 }
 

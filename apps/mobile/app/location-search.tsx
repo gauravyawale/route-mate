@@ -13,6 +13,7 @@ import * as Location from "expo-location";
 import { useTheme } from "../hooks/useTheme";
 import { fonts } from "../lib/theme";
 import { useSearchStore } from "../store/searchStore";
+import { useLocationPickerStore } from "../store/locationPickerStore";
 
 const DEFAULT_REGION: Region = {
   // Pune as a fallback center — adjust if your primary market is elsewhere
@@ -24,9 +25,11 @@ const DEFAULT_REGION: Region = {
 
 export default function LocationSearchScreen() {
   const { theme } = useTheme();
-  const { tab, field } = useLocalSearchParams<{
+  const { tab, field, from, mode } = useLocalSearchParams<{
     tab: "to" | "fro";
     field: "origin" | "destination";
+    from?: string;
+    mode?: string;
   }>();
   const { setLeg } = useSearchStore();
   const mapRef = useRef<MapView>(null);
@@ -40,6 +43,8 @@ export default function LocationSearchScreen() {
   const [isResolvingAddress, setIsResolvingAddress] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingLocation, setIsLoadingLocation] = useState(true);
+
+  const { setResult } = useLocationPickerStore();
 
   // On mount — try to center on current location for a better starting point
   useEffect(() => {
@@ -148,6 +153,18 @@ export default function LocationSearchScreen() {
 
   const handleConfirm = () => {
     if (!address) return;
+
+    if (from === "create-ride" && mode) {
+      // driver create ride flow — store in picker store
+      setResult(mode, {
+        address,
+        lat: pinCoords.lat,
+        lng: pinCoords.lng,
+      });
+      router.back();
+      return;
+    }
+
     setLeg(tab, {
       [field]: { address, lat: pinCoords.lat, lng: pinCoords.lng },
     });
@@ -191,7 +208,7 @@ export default function LocationSearchScreen() {
               fontFamily: fonts.regular,
               fontSize: 14,
             }}
-            placeholder={`Search ${field === "origin" ? "pickup" : "drop"} location...`}
+            placeholder={`Search ${(mode ?? field) === "origin" ? "pickup" : "drop"} location...`}
             placeholderTextColor={theme.textDisabled}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -272,7 +289,9 @@ export default function LocationSearchScreen() {
               width: 2,
               height: 14,
               backgroundColor:
-                field === "origin" ? theme.mapPickup : theme.mapDestination,
+                (mode ?? field) === "origin"
+                  ? theme.mapPickup
+                  : theme.mapDestination,
             }}
           />
         </View>
@@ -328,7 +347,7 @@ export default function LocationSearchScreen() {
             marginBottom: 6,
           }}
         >
-          {field === "origin" ? "PICKUP LOCATION" : "DROP LOCATION"}
+          {(mode ?? field) === "origin" ? "PICKUP LOCATION" : "DROP LOCATION"}
         </Text>
         <View
           style={{

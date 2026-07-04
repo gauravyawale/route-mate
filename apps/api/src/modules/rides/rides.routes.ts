@@ -12,6 +12,12 @@ export const rideRoutes = async (app: FastifyInstance) => {
     ridesController.searchRides.bind(ridesController),
   );
 
+  app.get(
+    "/my",
+    { preHandler: [authenticate, requireMode("driver")] },
+    ridesController.getMyRides.bind(ridesController),
+  );
+
   // GET /rides/:id — any authenticated user
   app.get(
     "/:id",

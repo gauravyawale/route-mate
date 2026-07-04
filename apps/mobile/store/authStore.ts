@@ -20,6 +20,7 @@ interface AuthState {
     accessToken: string,
     refreshToken: string,
   ) => Promise<void>;
+  updateUser: (user: AppUser) => void;
   logout: () => Promise<void>;
 }
 
@@ -31,6 +32,8 @@ export const useAuthStore = create<AuthState>((set) => ({
     await setTokens(accessToken, refreshToken);
     set({ user, isAuthenticated: true });
   },
+
+  updateUser: (user) => set({ user }),
 
   logout: async () => {
     await clearTokens();

@@ -45,6 +45,11 @@ export class RidesController {
     const result = await ridesService.snapToRoute({ ride_id: id, lat, lng });
     return reply.code(200).send({ data: result });
   }
+
+  async getMyRides(req: FastifyRequest, reply: FastifyReply) {
+    const rides = await ridesService.getMyRides(req.user.id);
+    return reply.send({ data: rides });
+  }
 }
 
 export const ridesController = new RidesController();
