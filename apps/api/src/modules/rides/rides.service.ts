@@ -5,12 +5,15 @@ import {
   RideDetailResponse,
   RideResponse,
   SearchRidesInput,
+  SnapToRouteInput,
   UpdateRideStatusInput,
 } from "@route-mate/shared";
 import { query, queryOne } from "../../infrastructure/db/client";
 import { AppError, NotFoundError } from "../../utils/errors";
 import { formatRide, formatRideDetail } from "../../utils/formatters";
 import { notifyRideStatusChanged } from "../../infrastructure/socket/notifications.js";
+import { SnapToRouteResponse } from "@route-mate/shared";
+import { getRoutePolyline } from "../../utils/routing";
 
 export interface RideDetailRow {
   // ride fields
@@ -39,6 +42,10 @@ export interface RideDetailRow {
   plate_number: string;
   vehicle_type: string;
   total_seats: number;
+  route_geojson: {
+    type: string;
+    coordinates: [number, number][]; // [lng, lat] pairs
+  } | null;
 }
 export class RidesService {
   /**
@@ -52,7 +59,6 @@ export class RidesService {
       `SELECT id FROM driver_profiles WHERE user_id = $1`,
       [userId],
     );
-
     if (!profile) {
       throw new NotFoundError(
         "Driver profile not found. Complete driver onboarding first.",
@@ -60,40 +66,48 @@ export class RidesService {
     }
 
     const vehicle = await queryOne<{ id: string }>(
-      `SELECT id
-        FROM vehicles
-        WHERE id = $1
-        AND driver_id = $2
-        AND is_active = True`,
+      `SELECT id FROM vehicles WHERE id = $1 AND driver_id = $2 AND is_active = True`,
       [input.vehicle_id, profile.id],
     );
-
     if (!vehicle) {
       throw new NotFoundError("Vehicle not found or not active.");
     }
 
+    // fetch real road route from Google Directions
+    const routePoints = await getRoutePolyline(
+      input.origin_lat,
+      input.origin_lng,
+      input.destination_lat,
+      input.destination_lng,
+    );
+
+    // build PostGIS ST_MakeLine from all route points
+    // format: LINESTRING(lng lat, lng lat, ...)
+    const linestring = routePoints
+      .map(([lng, lat]) => `${lng} ${lat}`)
+      .join(",");
+
     const ride = await queryOne<Ride>(
       `INSERT INTO rides (
-            driver_id, vehicle_id,
-        origin_address, origin_location,
-        destination_address, destination_location,
-        route_line,
-        scheduled_at, seats_total, seats_available, price_per_seat
-        )
-        VALUES (
-            $1, $2, $3,
-            ST_MakePoint($4, $5)::geography,
-            $6, ST_MakePoint($7, $8)::geography,
-            ST_MakeLine(
-            ST_MakePoint($4, $5),
-            ST_MakePoint($7, $8)
-            )::geography,
-            $9, $10, $10, $11)
-            RETURNING
-                id, driver_id, vehicle_id, origin_address,
-                destination_address, scheduled_at, seats_total,
-                seats_available, price_per_seat, status,
-                created_at, updated_at`,
+      driver_id, vehicle_id,
+      origin_address, origin_location,
+      destination_address, destination_location,
+      route_line,
+      scheduled_at, seats_total, seats_available, price_per_seat
+    )
+    VALUES (
+      $1, $2, $3,
+      ST_MakePoint($4, $5)::geography,
+      $6,
+      ST_MakePoint($7, $8)::geography,
+      ST_GeomFromText($9, 4326)::geography,
+      $10, $11, $11, $12
+    )
+    RETURNING
+      id, driver_id, vehicle_id, origin_address,
+      destination_address, scheduled_at, seats_total,
+      seats_available, price_per_seat, status,
+      created_at, updated_at`,
       [
         profile.id,
         input.vehicle_id,
@@ -103,11 +117,13 @@ export class RidesService {
         input.destination_address,
         input.destination_lng,
         input.destination_lat,
+        `LINESTRING(${linestring})`, // $9 — real road geometry
         input.scheduled_at,
         input.seats_total,
         input.price_per_seat,
       ],
     );
+
     if (!ride) throw new AppError("Failed to create ride");
     return formatRide(ride);
   }
@@ -116,32 +132,32 @@ export class RidesService {
    * search rides
    */
   async searchRides(input: SearchRidesInput): Promise<RideResponse[]> {
-    const radius = input.radius_m ?? 5000; // default 5km
+    const radius = input.radius_m ?? 5000;
     const rides = await query<Ride>(
       `SELECT
-            id, driver_id, vehicle_id,
-            origin_address, destination_address,
-            scheduled_at, seats_total, seats_available,
-            price_per_seat, status, created_at,
-            ST_Distance(
-                origin_location,
-                ST_MakePoint($1, $2)::geography
-            ) AS distance_m
-            FROM rides
-            WHERE status = 'open'
-            AND scheduled_at > NOW()
-            AND seats_available > 0
-            AND ST_DWithin(route_line, ST_MakePoint($1, $2)::geography, $5)
-            AND ST_DWithin(route_line, ST_MakePoint($3, $4)::geography, $5)
-            AND ST_LineLocatePoint(
-                    route_line::geometry,
-                    ST_MakePoint($1, $2)::geometry
-            ) < ST_LineLocatePoint(
-                route_line::geometry,
-                ST_MakePoint($3, $4)::geometry
-            )
-            ORDER BY distance_m ASC
-            LIMIT 20`,
+      id, driver_id, vehicle_id,
+      origin_address, destination_address,
+      scheduled_at, seats_total, seats_available,
+      price_per_seat, status, created_at,
+      ST_Distance(
+        origin_location,
+        ST_MakePoint($1, $2)::geography
+      ) AS distance_m
+    FROM rides
+    WHERE status = 'open'
+      AND scheduled_at > NOW()
+      AND seats_available > 0
+      AND ST_DWithin(route_line, ST_MakePoint($1, $2)::geography, $5)
+      AND ST_DWithin(route_line, ST_MakePoint($3, $4)::geography, $5)
+      AND ST_LineLocatePoint(
+        route_line::geometry,
+        ST_SetSRID(ST_MakePoint($1, $2), 4326)
+      ) < ST_LineLocatePoint(
+        route_line::geometry,
+        ST_SetSRID(ST_MakePoint($3, $4), 4326)
+      )
+    ORDER BY distance_m ASC
+    LIMIT 20`,
       [
         input.origin_lng,
         input.origin_lat,
@@ -184,7 +200,8 @@ export class RidesService {
       v.color,
       v.plate_number,
       v.vehicle_type,
-      v.total_seats
+      v.total_seats,
+      ST_AsGeoJSON(r.route_line)::json AS route_geojson
     FROM rides r
     JOIN driver_profiles dp ON dp.id = r.driver_id
     JOIN users u            ON u.id  = dp.user_id
@@ -327,6 +344,47 @@ export class RidesService {
       status: "cancelled",
       cancelled_reason: reason,
     });
+  }
+
+  /**
+   * snapToRoute
+   * Given a tap coordinate, find the nearest point on the ride's route_line
+   * Used by riders selecting hop-in/hop-off points — ensures the selected
+   * point is actually on the driver's path, not an arbitrary location
+   */
+  async snapToRoute(input: SnapToRouteInput): Promise<SnapToRouteResponse> {
+    const result = await queryOne<{
+      snapped_lat: number;
+      snapped_lng: number;
+      fraction_along_route: number;
+    }>(
+      `SELECT
+    ST_Y(snapped_point::geometry) AS snapped_lat,
+    ST_X(snapped_point::geometry) AS snapped_lng,
+    ST_LineLocatePoint(
+      route_line::geometry,
+      snapped_point::geometry
+    ) AS fraction_along_route
+  FROM (
+    SELECT
+      ST_ClosestPoint(
+        route_line::geometry,
+        ST_SetSRID(ST_MakePoint($2, $3), 4326)
+      )::geography AS snapped_point,
+      route_line
+    FROM rides
+    WHERE id = $1
+  ) sub`,
+      [input.ride_id, input.lng, input.lat],
+    );
+
+    if (!result) throw new NotFoundError("Ride not found or has no route.");
+
+    return {
+      snapped_lat: result.snapped_lat,
+      snapped_lng: result.snapped_lng,
+      fraction_along_route: result.fraction_along_route,
+    };
   }
 }
 

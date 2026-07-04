@@ -46,4 +46,11 @@ export const rideRoutes = async (app: FastifyInstance) => {
     { preHandler: [authenticate, requireMode("driver")] },
     bookingsController.getRideBookings.bind(bookingsController),
   );
+
+  // POST /rides/:id/snap-to-route — rider taps map, get nearest point on route
+  app.post(
+    "/:id/snap-to-route",
+    { preHandler: [authenticate] },
+    ridesController.snapToRoute.bind(ridesController),
+  );
 };

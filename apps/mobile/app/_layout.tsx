@@ -36,6 +36,16 @@ export default function RootLayout() {
             headerTitleStyle: { fontFamily: "Inter_600SemiBold" },
           }}
         />
+        <Stack.Screen
+          name="ride/[id]"
+          options={{
+            headerShown: true,
+            title: "Ride Details",
+            headerStyle: { backgroundColor: "#2563EB" },
+            headerTintColor: "#FFFFFF",
+            headerTitleStyle: { fontFamily: "Inter_600SemiBold" },
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

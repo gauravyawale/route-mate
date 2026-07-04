@@ -38,6 +38,13 @@ export class RidesController {
     const result = await ridesService.cancelRide(req.user.id, id, reason);
     return reply.code(200).send({ data: result });
   }
+
+  async snapToRoute(req: FastifyRequest, reply: FastifyReply) {
+    const { id } = req.params as { id: string };
+    const { lat, lng } = req.body as { lat: number; lng: number };
+    const result = await ridesService.snapToRoute({ ride_id: id, lat, lng });
+    return reply.code(200).send({ data: result });
+  }
 }
 
 export const ridesController = new RidesController();
