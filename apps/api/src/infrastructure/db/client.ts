@@ -26,24 +26,24 @@ pool.on("error", (err) => {
  * Execute a query, return all rows
  * Use for: SELECT queries returning multiple rows
  */
-export async function query<T extends Record<string, unknown>>(
+export async function query<T = any>(
   text: string,
   params?: unknown[],
 ): Promise<T[]> {
-  const result = await pool.query<T>(text, params);
-  return result.rows;
+  const result = await pool.query(text, params);
+  return result.rows as T[];
 }
 
 /**
  * Execute a query, return first row or null
  * Use for: SELECT by ID, find one record
  */
-export async function queryOne<T extends Record<string, unknown>>(
+export async function queryOne<T = any>(
   text: string,
   params?: unknown[],
 ): Promise<T | null> {
-  const result = await pool.query<T>(text, params);
-  return result.rows[0] ?? null;
+  const result = await pool.query(text, params);
+  return (result.rows[0] ?? null) as T | null;
 }
 
 /**
