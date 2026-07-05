@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "tsx watch --env-file=.env src/server.ts",
-    "build": "yarn workspace @route-mate/shared build && tsc",
+    "build": "tsc --build",
     "start": "node dist/server.js",
     "start:worker": "node dist/worker.js",
     "test": "vitest",
