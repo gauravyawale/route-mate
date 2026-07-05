@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  Image,
 } from "react-native";
 import { router } from "expo-router";
 import { api } from "../../lib/api";
@@ -80,25 +81,20 @@ export default function LoginScreen() {
               height: 64,
               borderRadius: 18,
               backgroundColor: theme.brand,
-              alignItems: "center",
-              justifyContent: "center",
               marginBottom: 16,
               shadowColor: theme.brand,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.3,
               shadowRadius: 12,
               elevation: 6,
+              overflow: "hidden",
             }}
           >
-            <Text
-              style={{
-                color: theme.textInverse,
-                fontSize: 26,
-                fontFamily: fonts.bold,
-              }}
-            >
-              R
-            </Text>
+            <Image
+              source={require("../../assets/icon.png")}
+              style={{ width: 64, height: 64 }}
+              resizeMode="cover"
+            />
           </View>
           <Text
             style={{

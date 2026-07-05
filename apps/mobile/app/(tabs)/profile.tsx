@@ -14,6 +14,7 @@ import { useThemeStore } from "../../store/themeStore";
 import { useAuthStore } from "../../store/authStore";
 import { fonts } from "../../lib/theme";
 import { api } from "../../lib/api";
+import { disconnectSocket } from "../../lib/socket";
 
 const themeOptions: Array<{
   label: string;
@@ -62,6 +63,11 @@ export default function ProfileScreen() {
   const [vPlate, setVPlate] = useState("");
   const [vSeats, setVSeats] = useState("4");
   const [vType, setVType] = useState<"car" | "bike">("car");
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [editName, setEditName] = useState(user?.full_name ?? "");
+  const [editEmail, setEditEmail] = useState(user?.email ?? "");
+  const [isSaving, setIsSaving] = useState(false);
 
   const isDriver = user?.is_driver_approved;
   const currentMode = user?.active_mode ?? "rider";
@@ -163,6 +169,7 @@ export default function ProfileScreen() {
         text: "Log out",
         style: "destructive",
         onPress: async () => {
+          disconnectSocket();
           await logout();
           router.replace("/(auth)/login");
         },
@@ -598,6 +605,34 @@ export default function ProfileScreen() {
     );
   };
 
+  const handleSaveProfile = async () => {
+    if (!editName.trim()) {
+      Alert.alert("Error", "Name cannot be empty.");
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await api.patch("/api/v1/users/me", {
+        full_name: editName.trim(),
+        email: editEmail.trim() || null,
+      });
+      updateUser({
+        ...user!,
+        full_name: editName.trim(),
+        email: editEmail.trim() || null,
+      });
+      setIsEditing(false);
+      Alert.alert("Success", "Profile updated!");
+    } catch (err: any) {
+      Alert.alert(
+        "Error",
+        err.response?.data?.error?.message ?? "Failed to update profile.",
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView
@@ -625,9 +660,6 @@ export default function ProfileScreen() {
             borderRadius: 18,
             padding: 18,
             marginBottom: 20,
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 14,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: isDark ? 0.3 : 0.06,
@@ -635,68 +667,228 @@ export default function ProfileScreen() {
             elevation: 4,
           }}
         >
-          <View
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 28,
-              backgroundColor: theme.brand,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Text
-              style={{
-                color: theme.textInverse,
-                fontSize: 22,
-                fontFamily: fonts.bold,
-              }}
+          {!isEditing ? (
+            // view mode
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
             >
-              {user?.full_name?.charAt(0)?.toUpperCase() ?? "U"}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text
-              style={{
-                color: theme.textPrimary,
-                fontSize: 17,
-                fontFamily: fonts.semibold,
-              }}
-            >
-              {user?.full_name || "Add your name"}
-            </Text>
-            <Text
-              style={{
-                color: theme.textSecondary,
-                fontSize: 14,
-                marginTop: 2,
-                fontFamily: fonts.regular,
-              }}
-            >
-              {user?.phone}
-            </Text>
-          </View>
-          <View
-            style={{
-              backgroundColor:
-                currentMode === "driver"
-                  ? theme.actionBg + "20"
-                  : theme.brand + "20",
-              paddingHorizontal: 10,
-              paddingVertical: 4,
-              borderRadius: 8,
-            }}
-          >
-            <Text
-              style={{
-                color: currentMode === "driver" ? theme.actionBg : theme.brand,
-                fontFamily: fonts.semibold,
-                fontSize: 12,
-              }}
-            >
-              {currentMode === "driver" ? "Driver" : "Rider"}
-            </Text>
-          </View>
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: 28,
+                  backgroundColor: theme.brand,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: theme.textInverse,
+                    fontSize: 22,
+                    fontFamily: fonts.bold,
+                  }}
+                >
+                  {user?.full_name?.charAt(0)?.toUpperCase() ?? "U"}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    color: theme.textPrimary,
+                    fontSize: 17,
+                    fontFamily: fonts.semibold,
+                  }}
+                >
+                  {user?.full_name || "Add your name"}
+                </Text>
+                <Text
+                  style={{
+                    color: theme.textSecondary,
+                    fontSize: 14,
+                    marginTop: 2,
+                    fontFamily: fonts.regular,
+                  }}
+                >
+                  {user?.phone}
+                </Text>
+                {user?.email && (
+                  <Text
+                    style={{
+                      color: theme.textSecondary,
+                      fontSize: 13,
+                      marginTop: 1,
+                      fontFamily: fonts.regular,
+                    }}
+                  >
+                    {user.email}
+                  </Text>
+                )}
+              </View>
+              <View style={{ alignItems: "flex-end", gap: 8 }}>
+                <View
+                  style={{
+                    backgroundColor:
+                      currentMode === "driver"
+                        ? theme.actionBg + "20"
+                        : theme.brand + "20",
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      color:
+                        currentMode === "driver" ? theme.actionBg : theme.brand,
+                      fontFamily: fonts.semibold,
+                      fontSize: 12,
+                    }}
+                  >
+                    {currentMode === "driver" ? "Driver" : "Rider"}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => {
+                    setEditName(user?.full_name ?? "");
+                    setEditEmail(user?.email ?? "");
+                    setIsEditing(true);
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.brand,
+                      fontFamily: fonts.medium,
+                      fontSize: 13,
+                    }}
+                  >
+                    Edit
+                  </Text>
+                </Pressable>
+              </View>
+            </View>
+          ) : (
+            // edit mode
+            <View style={{ gap: 12 }}>
+              <Text
+                style={{
+                  color: theme.textPrimary,
+                  fontFamily: fonts.semibold,
+                  fontSize: 15,
+                  marginBottom: 4,
+                }}
+              >
+                Edit Profile
+              </Text>
+              <View>
+                <Text
+                  style={{
+                    color: theme.textSecondary,
+                    fontFamily: fonts.medium,
+                    fontSize: 12,
+                    marginBottom: 6,
+                  }}
+                >
+                  FULL NAME
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: theme.inputBg,
+                    borderWidth: 1,
+                    borderColor: theme.inputBorder,
+                    borderRadius: 10,
+                    paddingHorizontal: 14,
+                    paddingVertical: 11,
+                    color: theme.textPrimary,
+                    fontFamily: fonts.regular,
+                    fontSize: 15,
+                  }}
+                  value={editName}
+                  onChangeText={setEditName}
+                  placeholder="Your full name"
+                  placeholderTextColor={theme.textDisabled}
+                />
+              </View>
+              <View>
+                <Text
+                  style={{
+                    color: theme.textSecondary,
+                    fontFamily: fonts.medium,
+                    fontSize: 12,
+                    marginBottom: 6,
+                  }}
+                >
+                  EMAIL (optional)
+                </Text>
+                <TextInput
+                  style={{
+                    backgroundColor: theme.inputBg,
+                    borderWidth: 1,
+                    borderColor: theme.inputBorder,
+                    borderRadius: 10,
+                    paddingHorizontal: 14,
+                    paddingVertical: 11,
+                    color: theme.textPrimary,
+                    fontFamily: fonts.regular,
+                    fontSize: 15,
+                  }}
+                  value={editEmail}
+                  onChangeText={setEditEmail}
+                  placeholder="your@email.com"
+                  placeholderTextColor={theme.textDisabled}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                />
+              </View>
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <Pressable
+                  onPress={() => setIsEditing(false)}
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.elevated,
+                    borderRadius: 10,
+                    paddingVertical: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: theme.textSecondary,
+                      fontFamily: fonts.semibold,
+                      fontSize: 14,
+                    }}
+                  >
+                    Cancel
+                  </Text>
+                </Pressable>
+                <Pressable
+                  onPress={handleSaveProfile}
+                  disabled={isSaving}
+                  style={{
+                    flex: 1,
+                    backgroundColor: theme.brand,
+                    borderRadius: 10,
+                    paddingVertical: 12,
+                    alignItems: "center",
+                  }}
+                >
+                  {isSaving ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontFamily: fonts.semibold,
+                        fontSize: 14,
+                      }}
+                    >
+                      Save
+                    </Text>
+                  )}
+                </Pressable>
+              </View>
+            </View>
+          )}
         </View>
 
         {/* Driver section — renders based on status */}

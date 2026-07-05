@@ -8,32 +8,61 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { router } from "expo-router";
 import { useTheme } from "../hooks/useTheme";
 import { fonts } from "../lib/theme";
 import { api } from "../lib/api";
 
+// Validates Indian DL format: SS RR YYYY NNNNNNN
+// Accepts with or without space/hyphen between RTO and year
+// e.g. DL14 20110012345 or MH12-20210012345
+const LICENSE_REGEX = /^[A-Z]{2}\d{2}[\s-]?\d{4}\d{7}$/;
+
+function validateLicense(value: string): string | null {
+  const cleaned = value.trim().toUpperCase();
+  if (!cleaned) return "License number is required.";
+  if (!LICENSE_REGEX.test(cleaned)) {
+    return "Invalid format. Use SS RR YYYY NNNNNNN (e.g. MH12 20210012345)";
+  }
+  return null;
+}
+
 export default function DriverOnboardingScreen() {
   const { theme, isDark } = useTheme();
+
   const [licenseNumber, setLicenseNumber] = useState("");
-  const [licenseExpiry, setLicenseExpiry] = useState("");
+  const [licenseError, setLicenseError] = useState<string | null>(null);
+  const [licenseExpiry, setLicenseExpiry] = useState<Date>(() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() + 5); // default 5 years from now
+    return d;
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const handleLicenseChange = (value: string) => {
+    setLicenseNumber(value);
+    if (licenseError) setLicenseError(validateLicense(value));
+  };
+
   const handleApply = async () => {
-    if (!licenseNumber.trim()) {
-      Alert.alert("Error", "Please enter your license number.");
+    const error = validateLicense(licenseNumber);
+    if (error) {
+      setLicenseError(error);
       return;
     }
-    if (!licenseExpiry.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(licenseExpiry)) {
-      Alert.alert("Error", "Please enter expiry date in YYYY-MM-DD format.");
+
+    if (licenseExpiry <= new Date()) {
+      Alert.alert("Error", "License expiry date must be in the future.");
       return;
     }
 
     setIsSubmitting(true);
     try {
       await api.post("/api/v1/onboarding/apply", {
-        license_number: licenseNumber.trim(),
-        license_expiry: licenseExpiry.trim(),
+        license_number: licenseNumber.trim().toUpperCase(),
+        license_expiry: licenseExpiry.toISOString().split("T")[0], // YYYY-MM-DD
       });
       Alert.alert(
         "Application Submitted! 🎉",
@@ -53,14 +82,13 @@ export default function DriverOnboardingScreen() {
   const inputStyle = {
     backgroundColor: theme.inputBg,
     borderWidth: 1,
-    borderColor: theme.inputBorder,
+    borderColor: licenseError ? theme.error : theme.inputBorder,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     color: theme.textPrimary,
     fontFamily: fonts.regular,
     fontSize: 15,
-    marginBottom: 16,
   };
 
   const labelStyle = {
@@ -139,7 +167,7 @@ export default function DriverOnboardingScreen() {
             }}
           >
             Submit your driving license details to apply. Our team will review
-            your application and approve it within 24 hours.
+            and approve within 24 hours.
           </Text>
         </View>
 
@@ -150,34 +178,88 @@ export default function DriverOnboardingScreen() {
           placeholder="e.g. MH12 20210012345"
           placeholderTextColor={theme.textDisabled}
           value={licenseNumber}
-          onChangeText={setLicenseNumber}
+          onChangeText={handleLicenseChange}
           autoCapitalize="characters"
+          maxLength={16}
         />
+        {licenseError ? (
+          <Text
+            style={{
+              color: theme.error,
+              fontFamily: fonts.regular,
+              fontSize: 12,
+              marginTop: 4,
+              marginBottom: 12,
+            }}
+          >
+            {licenseError}
+          </Text>
+        ) : (
+          <Text
+            style={{
+              color: theme.textDisabled,
+              fontFamily: fonts.regular,
+              fontSize: 12,
+              marginTop: 4,
+              marginBottom: 12,
+            }}
+          >
+            Format: State Code + RTO + Year + Serial (e.g. DL14 20110012345)
+          </Text>
+        )}
 
-        {/* License expiry */}
+        {/* License expiry — date picker */}
         <Text style={labelStyle}>License Expiry Date</Text>
-        <TextInput
-          style={inputStyle}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={theme.textDisabled}
-          value={licenseExpiry}
-          onChangeText={setLicenseExpiry}
-          keyboardType="numeric"
-        />
-
-        <Text
+        <Pressable
+          onPress={() => setShowDatePicker(true)}
           style={{
-            color: theme.textDisabled,
-            fontFamily: fonts.regular,
-            fontSize: 12,
-            marginTop: -8,
+            backgroundColor: theme.inputBg,
+            borderWidth: 1,
+            borderColor: theme.inputBorder,
+            borderRadius: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
             marginBottom: 32,
           }}
         >
-          Enter date in YYYY-MM-DD format (e.g. 2029-12-31)
-        </Text>
+          <Text
+            style={{
+              color: theme.textSecondary,
+              fontFamily: fonts.medium,
+              fontSize: 11,
+              marginBottom: 2,
+            }}
+          >
+            EXPIRY DATE
+          </Text>
+          <Text
+            style={{
+              color: theme.textPrimary,
+              fontFamily: fonts.semibold,
+              fontSize: 15,
+            }}
+          >
+            {licenseExpiry.toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </Text>
+        </Pressable>
 
-        {/* Submit button */}
+        {showDatePicker && (
+          <DateTimePicker
+            value={licenseExpiry}
+            mode="date"
+            minimumDate={new Date()}
+            onChange={(event, date) => {
+              setShowDatePicker(false);
+              if (date) setLicenseExpiry(date);
+            }}
+          />
+        )}
+
+        {/* Submit */}
         <Pressable
           onPress={handleApply}
           disabled={isSubmitting}

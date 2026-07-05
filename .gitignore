@@ -5,14 +5,39 @@ node_modules/
 # Build outputs
 dist/
 .turbo/
+build/
 
 # Environment
 .env
 .env.local
 .env.*.local
+.env.development
+.env.production
+.env.staging
 
 # OS
 .DS_Store
+Thumbs.db
 
 # Logs
 *.log
+logs/
+
+# Firebase & Google
+google-services.json
+GoogleService-Info.plist
+*-firebase-adminsdk-*.json
+
+# Docker
+docker/postgres_data/
+docker/redis_data/
+
+# TypeScript
+*.tsbuildinfo
+
+# Editor
+.vscode/
+.idea/
+
+# Sensitive app config
+eas.json

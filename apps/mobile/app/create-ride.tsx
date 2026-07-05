@@ -52,6 +52,15 @@ export default function CreateRideScreen() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
 
+  // when selected vehicle changes, auto-set seats for bike
+  useEffect(() => {
+    if (selectedVehicle?.vehicle_type === "bike") {
+      setSeatsTotal("1");
+    } else if (selectedVehicle?.vehicle_type === "car") {
+      setSeatsTotal("3"); // default for car
+    }
+  }, [selectedVehicle]);
+
   useEffect(() => {
     fetchVehicles();
   }, []);
@@ -542,6 +551,7 @@ export default function CreateRideScreen() {
                 value={seatsTotal}
                 onChangeText={setSeatsTotal}
                 keyboardType="numeric"
+                editable={selectedVehicle?.vehicle_type !== "bike"}
               />
             </View>
             <View style={{ flex: 1 }}>
