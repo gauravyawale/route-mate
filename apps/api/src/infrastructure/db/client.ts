@@ -85,12 +85,25 @@ export async function withTransaction<T>(
  * Called from app.ts to verify DB is reachable before accepting requests
  */
 export async function connectDB(): Promise<void> {
-  const client = await pool.connect();
-  try {
-    await client.query("SELECT 1");
-    console.log("✅ PostgreSQL connected");
-  } finally {
-    client.release();
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const client = await pool.connect();
+      try {
+        await client.query("SELECT 1");
+        console.log("✅ PostgreSQL connected");
+        return;
+      } finally {
+        client.release();
+      }
+    } catch (err) {
+      retries--;
+      console.log(
+        `DB connection failed, retrying... (${retries} attempts left)`,
+      );
+      if (retries === 0) throw err;
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
   }
 }
 
