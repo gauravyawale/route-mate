@@ -68,5 +68,5 @@ export const authenticate = async (
   }
 
   // Attach user info to request for downstream handlers
-  req.user = user;
+  req.user = user as unknown as User;
 };
