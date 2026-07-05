@@ -1,10 +1,16 @@
 {
   "name": "route-mate",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "nohoist": [
+      "**/mobile/**",
+      "**/mobile"
+    ]
+  },
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",

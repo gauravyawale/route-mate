@@ -47,6 +47,7 @@ export function formatUser(user: User): UserResponse {
     is_verified: user.is_verified,
     is_driver_approved: user.is_driver_approved,
     active_mode: user.active_mode,
+    role: user.role,
   };
 }
 
@@ -105,6 +106,12 @@ export function formatRideDetail(row: RideDetailRow): RideDetailResponse {
       vehicle_type: row.vehicle_type,
       total_seats: row.total_seats,
     },
+    route_coordinates: row.route_geojson
+      ? row.route_geojson.coordinates.map(([lng, lat]: [number, number]) => ({
+          latitude: lat,
+          longitude: lng,
+        }))
+      : null,
   };
 }
 

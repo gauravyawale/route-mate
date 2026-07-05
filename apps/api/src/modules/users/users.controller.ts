@@ -19,6 +19,12 @@ export class UserController {
     const result = await usersService.switchMode(req.user.id, body);
     return reply.code(200).send({ data: result });
   }
+
+  async savePushToken(req: FastifyRequest, reply: FastifyReply) {
+    const { token } = req.body as { token: string };
+    await usersService.savePushToken(req.user.id, token);
+    return reply.send({ data: { success: true } });
+  }
 }
 
 export const userController = new UserController();

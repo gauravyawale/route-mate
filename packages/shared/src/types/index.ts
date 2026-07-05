@@ -311,6 +311,7 @@ export interface RideDetailResponse {
     vehicle_type: string;
     total_seats: number;
   };
+  route_coordinates: Array<{ latitude: number; longitude: number }> | null;
 }
 
 export interface PaymentResponse {
@@ -364,4 +365,20 @@ export interface DriverApplicationResponse {
     phone: string;
     avatar_url: string | null;
   };
+}
+
+export interface SnapToRouteInput {
+  ride_id: string;
+  lat: number;
+  lng: number;
+}
+
+export interface SnapToRouteResponse {
+  snapped_lat: number;
+  snapped_lng: number;
+  // position along route, 0 = origin, 1 = destination
+  // used to validate hop_in comes before hop_off
+  fraction_along_route: number;
+  // reverse-geocoded address isn't computed here —
+  // client handles that via expo-location after receiving snapped coords
 }

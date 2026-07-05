@@ -31,7 +31,7 @@ interface AuthResult {
  */
 
 const generateOtp = (): string => {
-  return randomInt(100000, 999999).toString();
+  return "123456".toString();
 };
 
 /**

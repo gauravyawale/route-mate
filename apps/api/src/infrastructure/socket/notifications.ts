@@ -1,4 +1,5 @@
-import { getIO } from "./index";
+import { getIO } from "./index.js";
+import { sendPushToUser } from "../../utils/pushNotifications.js";
 
 /**
  * This is the single place all Socket.io emissions live.
@@ -9,7 +10,7 @@ import { getIO } from "./index";
  * Booking Notifications
  */
 
-export function notifyBookingRequested(payload: {
+export async function notifyBookingRequested(payload: {
   driverUserId: string;
   bookingId: string;
   rideId: string;
@@ -27,9 +28,16 @@ export function notifyBookingRequested(payload: {
       hopInAddress: payload.hopInAddress,
       message: `${payload.riderName} wants to book ${payload.seatsBooked} seat(s)`,
     });
+
+  await sendPushToUser(
+    payload.driverUserId,
+    "New Booking Request! 🎫",
+    `${payload.riderName} wants to book ${payload.seatsBooked} seat(s) from ${payload.hopInAddress}`,
+    { bookingId: payload.bookingId, rideId: payload.rideId, screen: "ride" },
+  );
 }
 
-export function notifyBookingConfirmed(payload: {
+export async function notifyBookingConfirmed(payload: {
   riderUserId: string;
   bookingId: string;
   rideId: string;
@@ -39,10 +47,17 @@ export function notifyBookingConfirmed(payload: {
     rideId: payload.rideId,
     message: "Your booking is confirmed. Complete payment to secure your seat.",
   });
+
+  await sendPushToUser(
+    payload.riderUserId,
+    "Booking Confirmed! ✅",
+    "Your booking is confirmed. Tap to pay and secure your seat.",
+    { bookingId: payload.bookingId, rideId: payload.rideId, screen: "booking" },
+  );
 }
 
-export function notifyBookingCancelled(payload: {
-  userId: string; // whoever needs to be notified
+export async function notifyBookingCancelled(payload: {
+  userId: string;
   bookingId: string;
   rideId: string;
   reason?: string;
@@ -53,9 +68,18 @@ export function notifyBookingCancelled(payload: {
     reason: payload.reason,
     message: "A booking has been cancelled.",
   });
+
+  await sendPushToUser(
+    payload.userId,
+    "Booking Cancelled ❌",
+    payload.reason
+      ? `Your booking was cancelled. Reason: ${payload.reason}`
+      : "A booking has been cancelled.",
+    { bookingId: payload.bookingId, rideId: payload.rideId, screen: "booking" },
+  );
 }
 
-export function notifyPaymentCompleted(payload: {
+export async function notifyPaymentCompleted(payload: {
   driverUserId: string;
   bookingId: string;
   rideId: string;
@@ -71,9 +95,16 @@ export function notifyPaymentCompleted(payload: {
       amount: payload.amount,
       message: `${payload.riderName} has paid ₹${payload.amount}. Seat confirmed.`,
     });
+
+  await sendPushToUser(
+    payload.driverUserId,
+    "Payment Received! 💰",
+    `${payload.riderName} has paid ₹${payload.amount}. Seat confirmed.`,
+    { bookingId: payload.bookingId, rideId: payload.rideId, screen: "ride" },
+  );
 }
 
-export function notifyRideStatusChanged(payload: {
+export async function notifyRideStatusChanged(payload: {
   riderUserId: string;
   rideId: string;
   status: string;
@@ -85,9 +116,22 @@ export function notifyRideStatusChanged(payload: {
       status: payload.status,
       message: `Ride is now ${payload.status}.`,
     });
+
+  const statusMessages: Record<string, string> = {
+    in_progress: "Your ride has started! 🚗",
+    completed: "Your ride is complete! Hope you enjoyed it. 🎉",
+    cancelled: "Your ride has been cancelled. 😕",
+  };
+
+  await sendPushToUser(
+    payload.riderUserId,
+    "Ride Update 🚗",
+    statusMessages[payload.status] ?? `Ride is now ${payload.status}.`,
+    { rideId: payload.rideId, screen: "ride", status: payload.status },
+  );
 }
 
-export function notifyNoSeat(payload: {
+export async function notifyNoSeat(payload: {
   riderUserId: string;
   bookingId: string;
 }) {
@@ -95,16 +139,32 @@ export function notifyNoSeat(payload: {
     bookingId: payload.bookingId,
     message: "Sorry, no seats available. You will be refunded shortly.",
   });
+
+  await sendPushToUser(
+    payload.riderUserId,
+    "No Seat Available 😕",
+    "Sorry, no seats were available. You will be refunded shortly.",
+    { bookingId: payload.bookingId, screen: "booking" },
+  );
 }
 
-export function notifyDriverApproved(payload: { userIdToNotify: string }) {
+export async function notifyDriverApproved(payload: {
+  userIdToNotify: string;
+}) {
   getIO().to(payload.userIdToNotify).emit("driver.approved", {
     message:
       "Congratulations! Your driver application has been approved. Switch to driver mode to start offering rides.",
   });
+
+  await sendPushToUser(
+    payload.userIdToNotify,
+    "Driver Application Approved! 🎉",
+    "Congratulations! Switch to driver mode to start offering rides.",
+    { screen: "profile" },
+  );
 }
 
-export function notifyDriverRejected(payload: {
+export async function notifyDriverRejected(payload: {
   userIdToNotify: string;
   reason?: string;
 }) {
@@ -114,11 +174,21 @@ export function notifyDriverRejected(payload: {
       reason: payload.reason ?? null,
       message: "Your driver application was not approved. You may reapply.",
     });
+
+  await sendPushToUser(
+    payload.userIdToNotify,
+    "Application Not Approved",
+    payload.reason
+      ? `Your application was not approved. Reason: ${payload.reason}`
+      : "Your driver application was not approved. You may reapply.",
+    { screen: "profile" },
+  );
 }
 
 /**
  * Admin notifications
  * These emit to the "admins" room — all connected admin users receive them
+ * No push notifications for admin — they use the web dashboard
  */
 export function notifyAdminNewApplication(payload: {
   applicantName: string;

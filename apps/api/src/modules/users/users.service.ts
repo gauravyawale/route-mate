@@ -129,6 +129,15 @@ export class UsersService {
 
     return formatUser(updated);
   }
+
+  async savePushToken(userId: string, token: string): Promise<void> {
+    console.log("[push] saving token for userId:", userId, "token:", token);
+    const result = await queryOne(
+      `UPDATE users SET expo_push_token = $1 WHERE id = $2 RETURNING id, expo_push_token`,
+      [token, userId],
+    );
+    console.log("[push] update result:", result);
+  }
 }
 
 export const usersService = new UsersService();
