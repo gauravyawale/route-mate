@@ -37,7 +37,7 @@ app.register(helmet, {
 app.register(cors, {
   origin:
     config.NODE_ENV === "production"
-      ? ["https://yourdomain.com"] // replace with real domain
+      ? ["https://route-mate-web-iota.vercel.app/"] // replace with real domain
       : true, // allow all in development
   methods: ["GET", "POST", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
