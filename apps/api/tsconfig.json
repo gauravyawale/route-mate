@@ -1,8 +1,15 @@
 {
-  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "rootDir": "../../",
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
+    "rootDir": "../../",
     "paths": {
       "@route-mate/shared": ["../../packages/shared/src/index.ts"],
       "@route-mate/shared/*": ["../../packages/shared/src/*"]
