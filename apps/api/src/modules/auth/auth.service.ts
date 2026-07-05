@@ -131,10 +131,10 @@ export class AuthService {
       await redis.expire(requestKey, AUTH.OTP_RATE_WINDOW_SECONDS);
     }
 
-    if (requestCount > AUTH.MAX_OTP_REQUESTS) {
+    if (Number(requestCount) > AUTH.MAX_OTP_REQUESTS) {
       const ttl = await redis.ttl(requestKey);
       throw new TooManyRequestsError(
-        `Too many OTP requests. Try again in ${Math.ceil(ttl / 60)} minutes.`,
+        `Too many OTP requests. Try again in ${Math.ceil(Number(ttl) / 60)} minutes.`,
       );
     }
 
@@ -178,7 +178,7 @@ export class AuthService {
       await redis.expire(attemptsKey, AUTH.OTP_EXPIRY_SECONDS);
     }
 
-    if (attempts > AUTH.MAX_OTP_ATTEMPTS) {
+    if (Number(attempts) > AUTH.MAX_OTP_ATTEMPTS) {
       await redis.del(otpKey(e164Phone));
       throw new TooManyRequestsError(
         "Too many OTP attempts. Please request a new OTP.",
@@ -188,7 +188,7 @@ export class AuthService {
     const hashedInput = hashOtp(otp);
 
     if (hashedInput !== storedHash) {
-      const remaining = AUTH.MAX_OTP_ATTEMPTS - attempts;
+      const remaining = AUTH.MAX_OTP_ATTEMPTS - Number(attempts);
       throw new AppError(
         `Invalid OTP. You have ${remaining} attempts left.`,
         400,
