@@ -10,7 +10,7 @@ import {
   TooManyRequestsError,
   UnauthorizedError,
 } from "../../utils/errors.js";
-import { User } from "@route-mate/shared/types";
+import { User } from "@route-mate/shared";
 
 interface TokenPair {
   accessToken: string;

@@ -4,24 +4,6 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
-    },
-    "./types": {
-      "require": "./dist/types/index.js",
-      "types": "./dist/types/index.d.ts"
-    },
-    "./schemas": {
-      "require": "./dist/schemas/index.js",
-      "types": "./dist/schemas/index.d.ts"
-    },
-    "./constants": {
-      "require": "./dist/constants/index.js",
-      "types": "./dist/constants/index.d.ts"
-    }
-  },
   "scripts": {
     "build": "tsc",
     "lint": "eslint src/"
