@@ -27,20 +27,20 @@ const app = Fastify({
 });
 
 // TODO: Add more security headers and configure CORS properly in production
-// helmet sets various HTTP headers to help protect the app
-// prevents common vulnerabilities like XSS, clickjacking, etc.
-app.register(helmet, {
-  contentSecurityPolicy: false, // disable for API — no HTML served
-});
 
 // cors controls which origins can access the API — configure for production
 app.register(cors, {
   origin:
     config.NODE_ENV === "production"
-      ? ["https://yourdomain.com"] // replace with real domain
+      ? ["https://route-mate-web-iota.vercel.app/"] // replace with real domain
       : true, // allow all in development
   methods: ["GET", "POST", "PATCH", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"],
+});
+// helmet sets various HTTP headers to help protect the app
+// prevents common vulnerabilities like XSS, clickjacking, etc.
+app.register(helmet, {
+  contentSecurityPolicy: false, // disable for API — no HTML served
 });
 
 // rate limiting to prevent abuse — adjust limits as needed
