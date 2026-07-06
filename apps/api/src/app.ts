@@ -33,10 +33,11 @@ const app = Fastify({
 app.register(cors, {
   origin:
     config.NODE_ENV === "production"
-      ? ["https://route-mate-web-iota.vercel.app/"] // replace with real domain
-      : true, // allow all in development
-  methods: ["GET", "POST", "PATCH", "DELETE"],
+      ? ["https://route-mate-web-iota.vercel.app"]
+      : true,
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
 });
 // helmet sets various HTTP headers to help protect the app
 // prevents common vulnerabilities like XSS, clickjacking, etc.
