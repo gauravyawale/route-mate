@@ -14,6 +14,7 @@ import { bookingRoutes } from "./modules/bookings/bookings.routes";
 import { paymentRoutes } from "./modules/payments/payments.routes.js";
 import { onboardingRoutes } from "./modules/onboarding/onboarding.routes.js";
 import { adminRoutes } from "./modules/admin/admin.routes.js";
+import { healthRoutes } from "./modules/health/health.routes.js";
 
 const app = Fastify({
   logger: {
@@ -57,6 +58,8 @@ app.register(rateLimit, {
 });
 
 // ─── Register Routes ───────────────────────────────────────
+app.register(healthRoutes, { prefix: "/api/v1" });
+
 app.register(authRoutes, { prefix: "/api/v1/auth" });
 
 app.register(userRoutes, { prefix: "/api/v1/users" });
