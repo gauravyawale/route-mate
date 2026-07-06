@@ -35,7 +35,7 @@ app.register(cors, {
     config.NODE_ENV === "production"
       ? ["https://route-mate-web-iota.vercel.app"]
       : true,
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS", "HEAD"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
@@ -58,6 +58,10 @@ app.register(rateLimit, {
   }),
 });
 
+// ─── Register Middleware ───────────────────────────────────
+// Error handler
+registerErrorhandler(app);
+
 // ─── Register Routes ───────────────────────────────────────
 app.register(healthRoutes, { prefix: "/api/v1" });
 
@@ -76,9 +80,7 @@ app.register(paymentRoutes, { prefix: "/api/v1/payments" });
 app.register(onboardingRoutes, { prefix: "/api/v1/onboarding" });
 
 app.register(adminRoutes, { prefix: "/api/v1/admin" });
-// ─── Register Middleware ───────────────────────────────────
-// Error handler
-registerErrorhandler(app);
+
 // ─── Startup Hook ──────────────────────────────────────────
 // onReady fires after all plugins registered, before accepting requests
 app.addHook("onReady", async () => {
