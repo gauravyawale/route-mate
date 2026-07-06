@@ -91,11 +91,11 @@ const signRefreshToken = (userId: string, jti: string): string => {
 
 // --- SMS Helper Functions --------------------------------
 const sendSms = async (phone: string, otp: string): Promise<void> => {
-  if (config.NODE_ENV === "development") {
-    //In development, we just log the OTP instead of sending an actual SMS
-    console.log(`Sending OTP ${otp} to phone ${phone}`);
-    return;
-  }
+  // if (config.NODE_ENV === "development") {
+  //In development, we just log the OTP instead of sending an actual SMS
+  console.log(`Sending OTP ${otp} to phone ${phone}`);
+  return;
+  // }
 
   //TODO: sms provider integration, e.g. Twilio, MSG91, etc.
   throw new AppError("SMS sending not implemented", 501, "SMS_NOT_IMPLEMENTED");
