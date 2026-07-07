@@ -7,7 +7,7 @@ import {
 } from "./auth";
 import { router } from "expo-router";
 
-const BASE_URL = "http://192.168.1.7:3000";
+const BASE_URL = "https://route-mate-api.onrender.com";
 
 export const api = axios.create({
   baseURL: BASE_URL,
