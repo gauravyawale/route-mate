@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { setTokens, clearTokens } from "../lib/auth";
+import { queryClient } from "../lib/queryClient"; // ← add this
 
 interface AppUser {
   id: string;
@@ -30,6 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setUser: async (user, accessToken, refreshToken) => {
     await setTokens(accessToken, refreshToken);
+    queryClient.clear(); // ← clear cache on new login
     set({ user, isAuthenticated: true });
   },
 
@@ -37,6 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   logout: async () => {
     await clearTokens();
+    queryClient.clear(); // ← clear cache on logout
     set({ user: null, isAuthenticated: false });
   },
 }));
