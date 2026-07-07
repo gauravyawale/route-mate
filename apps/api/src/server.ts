@@ -1,5 +1,7 @@
 import app from "./app";
 import { initSocket } from "./infrastructure/socket";
+import "./infrastructure/queue/workers/booking.worker.js";
+import "./infrastructure/queue/workers/refund.worker.js";
 
 const start = async () => {
   try {
