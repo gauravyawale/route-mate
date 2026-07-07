@@ -17,7 +17,7 @@ export function useCurrentUser() {
     });
   }, []);
 
-  const { data, isError } = useQuery({
+  const { data, isError, error } = useQuery({
     queryKey: ["current-user"],
     queryFn: async () => {
       const res = await api.get("/api/v1/users/me");
@@ -36,13 +36,15 @@ export function useCurrentUser() {
 
   useEffect(() => {
     if (isError && checked) {
-      // token exists but API call failed — clear and redirect to login
-      clearTokens().then(() => {
-        useAuthStore.setState({ user: null, isAuthenticated: false });
-        router.replace("/(auth)/login");
-      });
+      const status = (error as any)?.response?.status;
+      if (status === 401) {
+        clearTokens().then(() => {
+          useAuthStore.setState({ user: null, isAuthenticated: false });
+          router.replace("/(auth)/login");
+        });
+      }
     }
-  }, [isError, checked]);
+  }, [isError, checked, error]);
 
   return user;
 }
