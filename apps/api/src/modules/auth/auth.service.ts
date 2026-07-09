@@ -31,7 +31,10 @@ interface AuthResult {
  */
 
 const generateOtp = (): string => {
-  return "123456".toString();
+  if (config.NODE_ENV === "development") {
+    return "123456"; // hardcoded for dev
+  }
+  return randomInt(100000, 999999).toString();
 };
 
 /**
@@ -91,14 +94,33 @@ const signRefreshToken = (userId: string, jti: string): string => {
 
 // --- SMS Helper Functions --------------------------------
 const sendSms = async (phone: string, otp: string): Promise<void> => {
-  // if (config.NODE_ENV === "development") {
-  //In development, we just log the OTP instead of sending an actual SMS
-  console.log(`Sending OTP ${otp} to phone ${phone}`);
-  return;
-  // }
+  if (config.NODE_ENV === "development") {
+    //In development, we just log the OTP instead of sending an actual SMS
+    console.log(`Sending OTP ${otp} to phone ${phone}`);
+    return;
+  }
 
   //TODO: sms provider integration, e.g. Twilio, MSG91, etc.
-  throw new AppError("SMS sending not implemented", 501, "SMS_NOT_IMPLEMENTED");
+  // throw new AppError("SMS sending not implemented", 501, "SMS_NOT_IMPLEMENTED");
+  // Fast2SMS API
+  const response = await fetch("https://www.fast2sms.com/dev/bulkV2", {
+    method: "POST",
+    headers: {
+      authorization: config.FAST2SMS_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      route: "otp",
+      variables_values: otp,
+      numbers: phone.replace("+91", ""), // Fast2SMS needs 10 digit number without country code
+    }),
+  });
+
+  const data = await response.json();
+  console.log("[SMS]", data, config.FAST2SMS_API_KEY);
+  if (!data.return) {
+    throw new AppError("Failed to send OTP via SMS", 500, "SMS_FAILED");
+  }
 };
 
 /**
@@ -144,9 +166,10 @@ export class AuthService {
     await redis.setEx(otpKey(e164Phone), AUTH.OTP_EXPIRY_SECONDS, hashedOtp);
     await redis.del(otpAttemptsKey(e164Phone));
 
-    await sendSms(e164Phone, otp);
+    // TODO: Integrate with SMS provider to send OTP
+    // await sendSms(e164Phone, otp);
 
-    return { message: "OTP sent successfully" };
+    return { message: `OTP sent successfully: ${otp}` };
   }
 
   /**
