@@ -7,12 +7,13 @@ import { useEffect } from "react";
 import { registerForPushNotifications } from "../../lib/notifications";
 import * as Notifications from "expo-notifications";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
   useCurrentUser();
-  useSocket(); // connects socket when authenticated
-  useSocketEvents(); // registers all event listeners
+  useSocket();
+  useSocketEvents();
 
   const { isAuthenticated } = useAuthStore();
 
@@ -20,7 +21,6 @@ export default function TabsLayout() {
     if (!isAuthenticated) return;
     registerForPushNotifications();
 
-    // handle tap on notification when app is in background
     const subscription = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         const data = response.notification.request.content.data;
@@ -44,12 +44,44 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: theme.surface,
           borderTopColor: theme.border,
+          height: 64,
+          paddingBottom: 8,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: "600",
+          marginTop: 2,
         },
       }}
     >
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="bookings" options={{ title: "Bookings" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profile" }} />
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="bookings"
+        options={{
+          title: "Bookings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="ticket" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

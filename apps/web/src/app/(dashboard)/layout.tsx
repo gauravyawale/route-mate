@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
 import Sidebar from "@/components/admin/Sidebar";
@@ -19,16 +19,21 @@ export default function DashboardLayout({
   const checked = useRef(false);
   const socketInitialized = useRef(false);
   const queryClient = useQueryClient();
+  const [authState, setAuthState] = useState<{
+    checked: boolean;
+    authed: boolean;
+  }>({ checked: false, authed: false });
 
   useEffect(() => {
     if (checked.current) return;
     checked.current = true;
-    if (!isAuthenticated()) {
-      router.push("/login");
+    const authenticated = isAuthenticated();
+    if (!authenticated) {
+      router.replace("/login");
     }
+    setAuthState({ checked: true, authed: authenticated });
   }, [router]);
 
-  // initialize socket and listen for admin events
   useEffect(() => {
     if (socketInitialized.current) return;
     if (!isAuthenticated()) return;
@@ -36,7 +41,6 @@ export default function DashboardLayout({
 
     const socket = initSocket();
 
-    // new driver application — refresh stats + applications list
     socket.on("admin.new_application", (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["driver-applications"] });
@@ -49,19 +53,16 @@ export default function DashboardLayout({
       });
     });
 
-    // new booking — refresh stats
     socket.on("admin.new_booking", (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.info(data.message);
     });
 
-    // payment completed — refresh stats
     socket.on("admin.payment_completed", (data) => {
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       toast.success(data.message);
     });
 
-    // driver approved notification (confirmation to admin)
     socket.on("driver.approved", () => {
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["driver-applications"] });
@@ -72,6 +73,8 @@ export default function DashboardLayout({
       socketInitialized.current = false;
     };
   }, [queryClient, router]);
+
+  if (!authState.checked || !authState.authed) return null;
 
   return (
     <div className="flex min-h-screen bg-background">
