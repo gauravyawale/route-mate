@@ -118,6 +118,28 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.post("/api/v1/auth/demo-login", { role: "admin" });
+      const { user, tokens } = res.data.data;
+      const { accessToken, refreshToken } = tokens;
+
+      if (user.role !== "admin") {
+        toast.error("Demo admin account misconfigured.");
+        return;
+      }
+
+      setUser(user, accessToken, refreshToken);
+      toast.success(`Welcome, ${user.full_name}`);
+      router.push("/dashboard");
+    } catch (err: any) {
+      toast.error(err.response?.data?.error?.message ?? "Demo login failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div
       className="min-h-screen flex items-center justify-center"
@@ -210,6 +232,26 @@ export default function LoginPage() {
                 Change phone number
               </Button>
             </form>
+          )}
+          {step === "phone" && (
+            <div className="mt-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-muted-foreground font-medium">
+                  OR
+                </span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleDemoLogin}
+                disabled={isLoading}
+              >
+                {isLoading ? "Loading..." : "🔑 Try Demo Admin"}
+              </Button>
+            </div>
           )}
         </CardContent>
       </Card>
