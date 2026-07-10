@@ -30,6 +30,12 @@ export class AuthController {
     const result = await authService.logout(refreshToken);
     return reply.code(200).send({ data: result });
   }
+
+  async demoLogin(req: FastifyRequest, reply: FastifyReply) {
+    const { role } = req.body as { role: "rider" | "driver" | "admin" };
+    const result = await authService.demoLogin(role);
+    return reply.code(200).send({ data: result });
+  }
 }
 
 export const authController = new AuthController();
