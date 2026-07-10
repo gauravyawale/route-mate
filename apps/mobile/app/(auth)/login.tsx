@@ -68,6 +68,23 @@ export default function LoginScreen() {
     }
   };
 
+  const handleDemoLogin = async (role: "rider" | "driver") => {
+    setIsLoading(true);
+    try {
+      const res = await api.post("/api/v1/auth/demo-login", { role });
+      const { user, tokens } = res.data.data;
+      await setUser(user, tokens.accessToken, tokens.refreshToken);
+      router.replace("/(tabs)");
+    } catch (err: any) {
+      Alert.alert(
+        "Error",
+        err.response?.data?.error?.message ?? "Demo login failed.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <KeyboardAvoidingView
@@ -302,6 +319,86 @@ export default function LoginScreen() {
             </>
           )}
         </View>
+        {step === "phone" && (
+          <View style={{ marginTop: 24 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 16,
+              }}
+            >
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: theme.border }}
+              />
+              <Text
+                style={{
+                  color: theme.textSecondary,
+                  fontSize: 12,
+                  marginHorizontal: 12,
+                  fontFamily: fonts.medium,
+                }}
+              >
+                OR TRY DEMO
+              </Text>
+              <View
+                style={{ flex: 1, height: 1, backgroundColor: theme.border }}
+              />
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <Pressable
+                onPress={() => handleDemoLogin("rider")}
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.brand + "15",
+                  borderWidth: 1,
+                  borderColor: theme.brand,
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20, marginBottom: 4 }}>🧳</Text>
+                <Text
+                  style={{
+                    color: theme.brand,
+                    fontFamily: fonts.semibold,
+                    fontSize: 12,
+                  }}
+                >
+                  Rider
+                </Text>
+              </Pressable>
+
+              <Pressable
+                onPress={() => handleDemoLogin("driver")}
+                disabled={isLoading}
+                style={{
+                  flex: 1,
+                  backgroundColor: theme.actionBg + "15",
+                  borderWidth: 1,
+                  borderColor: theme.actionBg,
+                  borderRadius: 12,
+                  paddingVertical: 12,
+                  alignItems: "center",
+                }}
+              >
+                <Text style={{ fontSize: 20, marginBottom: 4 }}>🚗</Text>
+                <Text
+                  style={{
+                    color: theme.actionBg,
+                    fontFamily: fonts.semibold,
+                    fontSize: 12,
+                  }}
+                >
+                  Driver
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        )}
       </KeyboardAvoidingView>
     </View>
   );
