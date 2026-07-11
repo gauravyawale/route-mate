@@ -14,4 +14,9 @@ export const userRoutes = async (app: FastifyInstance) => {
     { preHandler: [authenticate] },
     userController.savePushToken.bind(userController),
   );
+  app.get(
+    "/me/upload-url",
+    { preHandler: [authenticate] },
+    userController.getUploadUrl.bind(userController),
+  );
 };

@@ -25,6 +25,23 @@ export class UserController {
     await usersService.savePushToken(req.user.id, token);
     return reply.send({ data: { success: true } });
   }
+
+  async getUploadUrl(req: FastifyRequest, reply: FastifyReply) {
+    const { folder, fileExtension, contentType } = req.query as {
+      folder: "avatars" | "vehicles";
+      fileExtension: string;
+      contentType: string;
+    };
+
+    const { getPresignedUploadUrl } = await import("../../utils/s3.js");
+    const result = await getPresignedUploadUrl(
+      folder,
+      fileExtension,
+      contentType,
+    );
+
+    return reply.send({ data: result });
+  }
 }
 
 export const userController = new UserController();

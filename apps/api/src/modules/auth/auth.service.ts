@@ -338,6 +338,35 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  async demoLogin(role: "rider" | "driver" | "admin"): Promise<AuthResult> {
+    const demoPhoneMap: Record<string, string> = {
+      rider: "+919999900001",
+      driver: "+919999900002",
+      admin: "+919999900003",
+    };
+
+    const phone = demoPhoneMap[role];
+    if (!phone) {
+      throw new AppError("Invalid demo role", 400, "INVALID_DEMO_ROLE");
+    }
+
+    const user = await queryOne<User>("SELECT * FROM users WHERE phone = $1", [
+      phone,
+    ]);
+
+    if (!user) {
+      throw new AppError(
+        "Demo user not found. Contact support.",
+        404,
+        "DEMO_USER_NOT_FOUND",
+      );
+    }
+
+    const tokens = await this.issueTokenPair(user.id, user.active_mode);
+
+    return { user, tokens, isNewUser: false };
+  }
 }
 
 export const authService = new AuthService();

@@ -6,4 +6,5 @@ export const authRoutes = async (app: FastifyInstance) => {
   app.post("/verify-otp", authController.verifyOtp.bind(authController));
   app.post("/refresh", authController.refresh.bind(authController));
   app.post("/logout", authController.logout.bind(authController));
+  app.post("/demo-login", authController.demoLogin.bind(authController));
 };

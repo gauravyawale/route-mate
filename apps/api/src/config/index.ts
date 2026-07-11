@@ -15,10 +15,13 @@ const configSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1, "RAZORPAY_KEY_ID is required"),
   RAZORPAY_KEY_SECRET: z.string().min(1, "RAZORPAY_KEY_SECRET is required"),
   FRONTEND_URL: z.string().optional(),
-  FAST2SMS_API_KEY: z.string().min(1, "FAST2SMS_API_KEY is required"),
   // RAZORPAY_WEBHOOK_SECRET: z
   //   .string()
   //   .min(1, "RAZORPAY_WEBHOOK_SECRET is required"),
+  AWS_ACCESS_KEY_ID: z.string().min(1, "AWS_ACCESS_KEY_ID is required"),
+  AWS_SECRET_ACCESS_KEY: z.string().min(1, "AWS_SECRET_ACCESS_KEY is required"),
+  AWS_REGION: z.string().min(1, "AWS_REGION is required"),
+  AWS_S3_BUCKET_NAME: z.string().min(1, "AWS_S3_BUCKET_NAME is required"),
 });
 
 const parsed = configSchema.safeParse(process.env);
