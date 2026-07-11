@@ -15,7 +15,6 @@ const configSchema = z.object({
   RAZORPAY_KEY_ID: z.string().min(1, "RAZORPAY_KEY_ID is required"),
   RAZORPAY_KEY_SECRET: z.string().min(1, "RAZORPAY_KEY_SECRET is required"),
   FRONTEND_URL: z.string().optional(),
-  FAST2SMS_API_KEY: z.string().min(1, "FAST2SMS_API_KEY is required"),
   // RAZORPAY_WEBHOOK_SECRET: z
   //   .string()
   //   .min(1, "RAZORPAY_WEBHOOK_SECRET is required"),
