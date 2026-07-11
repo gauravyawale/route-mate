@@ -23,7 +23,6 @@
     },
     "android": {
       "package": "com.routemate.app",
-      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#2563EB"
@@ -44,6 +43,7 @@
     },
     "plugins": [
       "expo-router",
+      "./plugins/withGoogleServices",
       [
         "expo-location",
         {
