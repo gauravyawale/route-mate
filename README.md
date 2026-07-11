@@ -8,11 +8,11 @@ A carpooling app (Hopr/BlaBlaCar-style) built with Fastify, PostgreSQL + PostGIS
 
 Scan the QR codes below to test the deployed application immediately.
 
-| Platform             | Access Method                                                                                                 | QR Code                                                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| 🌐 **Web Dashboard** | [Visit Admin Board](https://route-mate-web-iota.vercel.app)                                                   | <img src="./apps/web/public/route-mate-qr.png" width="100" />        |
-| 📱 **Mobile App**    | [Download APK (Android)](https://github.com/your-username/route-mate/releases/latest/download/route-mate.apk) | <img src="./apps/mobile/assets/route-mate-app-qr.png" width="100" /> |
-| 🔧 **API Docs**      | [Bruno Collection](./route-mate-collection.zip)                                                               | -                                                                    |
+| Platform             | Access Method                                                                            | QR Code                                                              |
+| -------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| 🌐 **Web Dashboard** | [Visit Admin Board](https://route-mate-web-iota.vercel.app)                              | <img src="./apps/web/public/route-mate-qr.png" width="100" />        |
+| 📱 **Mobile App**    | [Download APK (Android)](https://github.com/gauravyawale/route-mate/releases/tag/v1.0.0) | <img src="./apps/mobile/assets/route-mate-app-qr.png" width="100" /> |
+| 🔧 **API Docs**      | [Bruno Collection](./route-mate-collection.zip)                                          | -                                                                    |
 
 ### Try it instantly — no signup required
 
