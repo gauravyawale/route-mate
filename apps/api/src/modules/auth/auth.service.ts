@@ -93,6 +93,7 @@ const signRefreshToken = (userId: string, jti: string): string => {
 };
 
 // --- SMS Helper Functions --------------------------------
+/** 
 const sendSms = async (phone: string, otp: string): Promise<void> => {
   if (config.NODE_ENV === "development") {
     //In development, we just log the OTP instead of sending an actual SMS
@@ -122,6 +123,7 @@ const sendSms = async (phone: string, otp: string): Promise<void> => {
     throw new AppError("Failed to send OTP via SMS", 500, "SMS_FAILED");
   }
 };
+*/
 
 /**
  * Combine country code + national number into E.164 format
