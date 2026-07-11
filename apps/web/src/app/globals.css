@@ -30,100 +30,100 @@
 }
 
 :root {
-  /* Material Sage & Gold — Light Mode */
+  /* Route Mate — Light Mode — matches mobile brand colors */
 
-  --background: 100 25% 97%; /* #F7FAF7 — soft sage-gray */
-  --foreground: 200 9% 19%; /* #2F3437 — charcoal */
+  --background: 210 20% 98%; /* #F8FAFC — matches mobile theme.background */
+  --foreground: 217 33% 17%; /* #1E293B — dark slate */
 
   --card: 0 0% 100%; /* #FFFFFF */
-  --card-foreground: 200 9% 19%;
+  --card-foreground: 217 33% 17%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 200 9% 19%;
+  --popover-foreground: 217 33% 17%;
 
-  /* Primary — Mustard Gold */
-  --primary: 42 73% 60%; /* #E7BB46 */
-  --primary-foreground: 200 9% 19%;
+  /* Primary — Route Mate Blue (matches mobile theme.brand) */
+  --primary: 217 91% 53%; /* #2563EB */
+  --primary-foreground: 0 0% 100%;
 
-  /* Secondary — Muted Sage Green */
-  --secondary: 134 31% 65%; /* #80BB8F */
+  /* Secondary — Route Mate Orange (matches mobile theme.actionBg) */
+  --secondary: 24 95% 53%; /* #F97316 */
   --secondary-foreground: 0 0% 100%;
 
   /* Muted */
-  --muted: 100 15% 94%;
+  --muted: 210 20% 95%;
   --muted-foreground: 220 9% 46%; /* #6B7280 */
 
-  /* Accent — Soft Green */
-  --accent: 142 31% 56%; /* #73B48A */
+  /* Accent — lighter blue tint */
+  --accent: 217 91% 60%;
   --accent-foreground: 0 0% 100%;
 
-  /* Semantic — status colors */
-  --success: 142 70% 31%; /* #1A8942 */
+  /* Semantic — status colors (matches mobile) */
+  --success: 142 71% 45%; /* #22C55E — matches mobile theme.success */
   --success-foreground: 0 0% 100%;
-  --warning: 42 73% 60%; /* #E7BB46 */
-  --warning-foreground: 200 9% 19%;
-  --destructive: 4 90% 58%; /* #F44336 */
+  --warning: 38 92% 50%; /* #F59E0B */
+  --warning-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%; /* #EF4444 — matches mobile theme.error */
   --destructive-foreground: 0 0% 100%;
 
-  --border: 200 9% 86%; /* #DADFE0 */
-  --input: 200 9% 86%;
-  --ring: 42 73% 60%;
+  --border: 214 20% 88%;
+  --input: 214 20% 88%;
+  --ring: 217 91% 53%;
 
-  --radius: 0.75rem; /* 12px — Material rounded corners */
+  --radius: 0.875rem; /* 14px — matches mobile card radius */
 
-  /* Sidebar — light with mustard gold active states */
+  /* Sidebar — light with blue active states */
   --sidebar: 0 0% 100%;
-  --sidebar-foreground: 200 9% 19%;
-  --sidebar-muted: 100 15% 95%;
+  --sidebar-foreground: 217 33% 17%;
+  --sidebar-muted: 210 20% 96%;
   --sidebar-muted-foreground: 220 9% 46%;
-  --sidebar-accent: 42 73% 60%; /* #E7BB46 */
-  --sidebar-border: 200 9% 90%;
-  --sidebar-active: 42 60% 93%; /* light gold tint for active bg */
+  --sidebar-accent: 217 91% 53%; /* #2563EB */
+  --sidebar-border: 214 20% 90%;
+  --sidebar-active: 217 91% 95%; /* light blue tint for active bg */
 }
 
 .dark {
-  /* Material Sage & Gold — Dark Mode */
+  /* Route Mate — Dark Mode */
 
-  --background: 200 15% 9%; /* darker, more contrast with cards */
-  --foreground: 0 0% 95%; /* near white — was too dim */
+  --background: 217 33% 8%; /* dark slate background */
+  --foreground: 210 20% 96%; /* near white */
 
-  --card: 200 12% 16%; /* lighter than background for separation */
-  --card-foreground: 0 0% 95%;
+  --card: 217 28% 13%; /* lighter than background for separation */
+  --card-foreground: 210 20% 96%;
 
-  --popover: 200 12% 16%;
-  --popover-foreground: 0 0% 95%;
+  --popover: 217 28% 13%;
+  --popover-foreground: 210 20% 96%;
 
-  --primary: 42 73% 60%; /* #E7BB46 — keep gold prominent */
-  --primary-foreground: 200 12% 12%; /* dark text on gold for contrast */
+  --primary: 217 91% 60%; /* #3B82F6 — matches mobile darkTheme.brand */
+  --primary-foreground: 217 33% 10%;
 
-  --secondary: 134 25% 45%;
-  --secondary-foreground: 0 0% 100%;
+  --secondary: 24 95% 61%; /* #FB923C — matches mobile darkTheme.actionBg */
+  --secondary-foreground: 217 33% 10%;
 
-  --muted: 200 10% 22%;
-  --muted-foreground: 220 9% 70%; /* lighter — was too dark to read */
+  --muted: 217 25% 18%;
+  --muted-foreground: 220 9% 70%;
 
-  --accent: 142 31% 55%;
-  --accent-foreground: 0 0% 100%;
+  --accent: 217 91% 65%;
+  --accent-foreground: 217 33% 10%;
 
-  --success: 142 55% 45%; /* brighter for dark bg visibility */
+  --success: 142 60% 50%;
   --success-foreground: 0 0% 100%;
-  --warning: 42 73% 60%;
-  --warning-foreground: 200 12% 12%;
-  --destructive: 4 80% 62%; /* brighter red for dark bg */
+  --warning: 38 92% 55%;
+  --warning-foreground: 217 33% 10%;
+  --destructive: 0 75% 62%;
   --destructive-foreground: 0 0% 100%;
 
-  --border: 200 10% 26%;
-  --input: 200 10% 26%;
-  --ring: 42 73% 60%;
+  --border: 217 20% 22%;
+  --input: 217 20% 22%;
+  --ring: 217 91% 60%;
 
-  /* Sidebar — dark surface, gold active states */
-  --sidebar: 200 12% 13%;
-  --sidebar-foreground: 0 0% 95%;
-  --sidebar-muted: 200 10% 18%;
+  /* Sidebar — dark surface, blue active states */
+  --sidebar: 217 28% 11%;
+  --sidebar-foreground: 210 20% 96%;
+  --sidebar-muted: 217 25% 16%;
   --sidebar-muted-foreground: 220 9% 70%;
-  --sidebar-accent: 42 73% 60%;
-  --sidebar-border: 200 10% 22%;
-  --sidebar-active: 42 50% 22%;
+  --sidebar-accent: 217 91% 60%;
+  --sidebar-border: 217 20% 18%;
+  --sidebar-active: 217 50% 20%;
 }
 
 * {
