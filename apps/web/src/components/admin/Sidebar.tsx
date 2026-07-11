@@ -25,6 +25,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import Image from "next/image";
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -60,16 +61,13 @@ export default function Sidebar() {
         {/* Logo */}
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-              style={{ backgroundColor: "hsl(var(--sidebar-accent))" }}
-            >
-              <span
-                style={{ color: "hsl(var(--foreground))" }}
-                className="text-sm font-bold"
-              >
-                R
-              </span>
+            <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 relative">
+              <Image
+                src="/icon.png"
+                alt="Route Mate"
+                fill
+                className="object-cover"
+              />
             </div>
             {!collapsed && (
               <div className="min-w-0">

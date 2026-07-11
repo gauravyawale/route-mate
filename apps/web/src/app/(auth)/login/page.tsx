@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Image from "next/image";
 
 // ─── Schemas ───────────────────────────────────────────────
 
@@ -148,16 +149,13 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1">
           <div className="flex items-center gap-2 mb-2">
-            <div
-              className="w-8 h-8 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: "hsl(var(--primary))" }}
-            >
-              <span
-                style={{ color: "hsl(var(--primary-foreground))" }}
-                className="text-sm font-bold"
-              >
-                R
-              </span>
+            <div className="w-8 h-8 rounded-lg overflow-hidden relative">
+              <Image
+                src="/icon.png"
+                alt="Route Mate"
+                fill
+                className="object-cover"
+              />
             </div>
             <span className="font-semibold text-zinc-900">Route Mate</span>
           </div>
