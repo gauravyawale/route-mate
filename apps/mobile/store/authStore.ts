@@ -7,6 +7,7 @@ interface AppUser {
   phone: string;
   full_name: string;
   email: string | null;
+  avatar_url: string | null; // ← add this
   active_mode: "rider" | "driver";
   is_driver_approved: boolean;
   is_verified: boolean;

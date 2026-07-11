@@ -7,6 +7,7 @@ import {
   ScrollView,
   ActivityIndicator,
   TextInput,
+  Image,
 } from "react-native";
 import { router } from "expo-router";
 import { useTheme } from "../../hooks/useTheme";
@@ -15,6 +16,7 @@ import { useAuthStore } from "../../store/authStore";
 import { fonts } from "../../lib/theme";
 import { api } from "../../lib/api";
 import { disconnectSocket } from "../../lib/socket";
+import { pickAndUploadImage } from "../../lib/upload";
 
 const themeOptions: Array<{
   label: string;
@@ -68,6 +70,8 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState(user?.full_name ?? "");
   const [editEmail, setEditEmail] = useState(user?.email ?? "");
   const [isSaving, setIsSaving] = useState(false);
+
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
   const isDriver = user?.is_driver_approved;
   const currentMode = user?.active_mode ?? "rider";
@@ -633,6 +637,22 @@ export default function ProfileScreen() {
     }
   };
 
+  const handleChangeAvatar = async () => {
+    try {
+      setIsUploadingAvatar(true);
+      const fileUrl = await pickAndUploadImage("avatars");
+      if (!fileUrl) return;
+
+      await api.patch("/api/v1/users/me", { avatar_url: fileUrl });
+      updateUser({ ...user!, avatar_url: fileUrl });
+      Alert.alert("Success", "Profile photo updated!");
+    } catch (err: any) {
+      Alert.alert("Error", err.message ?? "Failed to update photo.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
       <ScrollView
@@ -672,26 +692,59 @@ export default function ProfileScreen() {
             <View
               style={{ flexDirection: "row", alignItems: "center", gap: 14 }}
             >
-              <View
-                style={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: 28,
-                  backgroundColor: theme.brand,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
+              <Pressable
+                onPress={handleChangeAvatar}
+                disabled={isUploadingAvatar}
               >
-                <Text
+                <View
                   style={{
-                    color: theme.textInverse,
-                    fontSize: 22,
-                    fontFamily: fonts.bold,
+                    width: 56,
+                    height: 56,
+                    borderRadius: 28,
+                    backgroundColor: theme.brand,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    overflow: "hidden",
                   }}
                 >
-                  {user?.full_name?.charAt(0)?.toUpperCase() ?? "U"}
-                </Text>
-              </View>
+                  {isUploadingAvatar ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : user?.avatar_url ? (
+                    <Image
+                      source={{ uri: user.avatar_url }}
+                      style={{ width: 56, height: 56 }}
+                      resizeMode="cover"
+                    />
+                  ) : (
+                    <Text
+                      style={{
+                        color: theme.textInverse,
+                        fontSize: 22,
+                        fontFamily: fonts.bold,
+                      }}
+                    >
+                      {user?.full_name?.charAt(0)?.toUpperCase() ?? "U"}
+                    </Text>
+                  )}
+                </View>
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: -2,
+                    right: -2,
+                    backgroundColor: theme.actionBg,
+                    width: 20,
+                    height: 20,
+                    borderRadius: 10,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderWidth: 2,
+                    borderColor: theme.surface,
+                  }}
+                >
+                  <Text style={{ fontSize: 10 }}>📷</Text>
+                </View>
+              </Pressable>
               <View style={{ flex: 1 }}>
                 <Text
                   style={{
