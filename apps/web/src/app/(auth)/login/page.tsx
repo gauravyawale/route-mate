@@ -80,7 +80,7 @@ export default function LoginPage() {
       });
       setPhone(data.phone);
       setStep("otp");
-      toast.success("OTP sent to your phone.");
+      toast.success("OTP sent to your phone. Use 123456 for testing.");
     } catch (err: any) {
       toast.error(err.response?.data?.error?.message ?? "Failed to send OTP.");
     } finally {
