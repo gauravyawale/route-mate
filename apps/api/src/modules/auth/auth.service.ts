@@ -34,7 +34,8 @@ const generateOtp = (): string => {
   if (config.NODE_ENV === "development") {
     return "123456"; // hardcoded for dev
   }
-  return randomInt(100000, 999999).toString();
+  return "123456"; // hardcoded for now, replace with randomInt in production
+  // return randomInt(100000, 999999).toString();
 };
 
 /**
